@@ -301,8 +301,41 @@ import toast from "react-hot-toast";
 
 const { Option } = Select;
 
-const PropertyDetails = ({ onNext }) => {
+const PropertyDetails = ({ extractedData, onNext }) => {
   const [form] = Form.useForm();
+
+  React.useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const bounds = p.boundaries || {};
+      const val = p.valuation_details || {};
+      const propDet = p.property_details || {};
+      const accom = p.accommodation_details || {};
+
+      form.setFieldsValue({
+        directions: {
+          North: bounds.north_actual || bounds.north_as_per_deed || extractedData.northBoundary || form.getFieldValue(["directions", "North"]),
+          South: bounds.south_actual || bounds.south_as_per_deed || extractedData.southBoundary || form.getFieldValue(["directions", "South"]),
+          East: bounds.east_actual || bounds.east_as_per_deed || extractedData.eastBoundary || form.getFieldValue(["directions", "East"]),
+          West: bounds.west_actual || bounds.west_as_per_deed || extractedData.westBoundary || form.getFieldValue(["directions", "West"]),
+        },
+        boundariesMatching: extractedData.boundariesMatching || form.getFieldValue("boundariesMatching"),
+        plotArea: val.plot_area_physical || val.plot_area_plan || val.plot_area_in_deed || extractedData.plotArea,
+        isPropertyWithinLimit: propDet.property_within_limit || extractedData.isPropertyWithinLimit,
+        marketability: propDet.marketability || extractedData.marketability,
+        typeOfStructure: accom.type_of_structure || p.property_sub_type || extractedData.typeOfStructure,
+        qualityOfConstruction: accom.quality_of_construction || extractedData.qualityOfConstruction,
+        unitFlatConfiguration: accom.flat_configuration || extractedData.unitFlatConfiguration,
+        noOfFloorsPermissible: propDet.no_of_floors_permissible || extractedData.noOfFloorsPermissible,
+        noOfUnitFlatOnEachFloor: propDet.no_of_units_on_each_floor || extractedData.noOfUnitFlatOnEachFloor,
+        noOfFloorsActual: propDet.no_of_floors_actual || extractedData.noOfFloorsActual,
+        approxAgeOfProperty: accom.age_of_property || propDet.age_of_property || extractedData.approxAgeOfProperty,
+        residualAge: accom.residual_age || propDet.residual_age || extractedData.residualAge,
+        liftAvailable: accom.lift_facility || extractedData.liftAvailable,
+        constructionStage: p.construction_stage || p.completion_status || extractedData.constructionStage,
+      });
+    }
+  }, [extractedData, form]);
 
   const initialValues = {
     directions: {

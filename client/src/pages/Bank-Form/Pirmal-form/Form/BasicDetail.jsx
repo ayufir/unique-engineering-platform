@@ -62,26 +62,61 @@ const BasicDetail = ({ isEdit, onNext }) => {
   }, [user.role]);
 
   useEffect(() => {
-    if (isEdit && locationLoaded) {
-      setFormData((prev) => ({
-        ...prev,
-        ...isEdit,
-        latitude: isEdit.latitude || prev.latitude,
-        longitude: isEdit.longitude || prev.longitude,
-      }));
+    setFormData((prev) => {
+      let newData = { ...prev };
 
-      if (isEdit.imageUrls && Array.isArray(isEdit.imageUrls)) {
-        const fileListFromServer = isEdit.imageUrls.map((url, index) => ({
-          uid: `server-${index}`,
-          name: url.split("/").pop(),
-          status: "done",
-          url,
-        }));
-        setImages(fileListFromServer);
-        setUploadedUrls(isEdit.imageUrls);
+      if (isEdit && locationLoaded) {
+        newData = {
+          ...newData,
+          ...isEdit,
+          latitude: isEdit.latitude || newData.latitude,
+          longitude: isEdit.longitude || newData.longitude,
+        };
+
+        if (isEdit.imageUrls && Array.isArray(isEdit.imageUrls)) {
+          const fileListFromServer = isEdit.imageUrls.map((url, index) => ({
+            uid: `server-${index}`,
+            name: url.split("/").pop(),
+            status: "done",
+            url,
+          }));
+          setImages(fileListFromServer);
+          setUploadedUrls(isEdit.imageUrls);
+        }
       }
-    }
-  }, [isEdit, locationLoaded]);
+
+      if (extractedData && Object.keys(extractedData).length > 0) {
+        const p = extractedData.property || {};
+        const addr = p.address || {};
+        const loc = p.location_details || {};
+        const accom = p.accommodation_details || {};
+
+        newData = {
+          ...newData,
+          applicantName: p.applicant_name || p.owner_name || extractedData.applicantName || newData.applicantName,
+          propertyCategory: p.property_type || extractedData.propertyCategory || newData.propertyCategory,
+          propertySubCategory: p.property_sub_type || accom.type_of_structure || extractedData.propertySubCategory || newData.propertySubCategory,
+          address: addr.full_address || extractedData.address || newData.address,
+          flatNo: addr.flat_no || addr.house_no || extractedData.flatNo || newData.flatNo,
+          floorWing: addr.floor_no || accom.flat_configuration || extractedData.floorWing || newData.floorWing,
+          buildingName: addr.building_name || addr.project_name || extractedData.buildingName || newData.buildingName,
+          khasraNumber: p.survey_no || p.khasra_no || extractedData.khasraNumber || newData.khasraNumber,
+          streetName: addr.street_name || addr.colony || extractedData.streetName || newData.streetName,
+          landmark: loc.landmark || extractedData.landmark || newData.landmark,
+          village: addr.village || addr.locality || extractedData.village || newData.village,
+          city: addr.city || addr.taluka || extractedData.city || newData.city,
+          district: addr.district || extractedData.district || newData.district,
+          pincode: addr.pincode || extractedData.pincode || newData.pincode,
+          state: addr.state || extractedData.state || newData.state,
+          country: addr.country || extractedData.country || newData.country,
+          latitude: addr.latitude || extractedData.latitude || newData.latitude,
+          longitude: addr.longitude || extractedData.longitude || newData.longitude,
+        };
+      }
+
+      return newData;
+    });
+  }, [isEdit, locationLoaded, extractedData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

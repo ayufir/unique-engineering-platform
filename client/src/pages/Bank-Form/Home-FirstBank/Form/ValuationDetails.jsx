@@ -273,42 +273,79 @@ const ValuationDetails = ({
   const [remarks, setRemarks] = useState([]);
 
   useEffect(() => {
-    const merged = { ...extractedData, ...isEdit };
+    const currentValues = form.getFieldsValue();
+    const merged = { ...isEdit };
+
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const val = p.valuation_details || {};
+      const accom = p.accommodation_details || {};
+      
+      const mapped = {
+        landDocumentArea: val.plot_area_in_deed || extractedData.landDocumentArea,
+        landDocumentRate: val.plot_area_in_deed_rate || extractedData.landDocumentRate,
+        landPlanArea: val.plot_area_plan || extractedData.landPlanArea,
+        landPlanRate: val.plot_area_plan_rate || extractedData.landPlanRate,
+        landSiteArea: val.plot_area_physical || p.plot_area || extractedData.landSiteArea,
+        landSiteRate: val.land_rate || val.plot_area_physical_rate || extractedData.landSiteRate,
+        constructionDocumentArea: val.super_built_up_area || extractedData.constructionDocumentArea,
+        constructionPlanArea: val.carpet_area_plan || extractedData.constructionPlanArea,
+        constructionSiteArea: val.carpet_area_measurement || extractedData.constructionSiteArea,
+        constructionSiteRate: val.construction_rate || extractedData.constructionSiteRate,
+        liftAvailable: accom.lift_facility || extractedData.liftAvailable,
+        ValuationasperGovtGuideline: val.government_value || extractedData.ValuationasperGovtGuideline,
+        realizableValue: val.total_value || extractedData.realizableValue,
+        constructionStage: p.construction_stage || val.construction_status || extractedData.constructionStage,
+        constructionStatus: val.completion_percentage || extractedData.constructionStatus,
+        marketRatePerSqft: val.market_rate || extractedData.marketRatePerSqft,
+      };
+
+      Object.entries(mapped).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== "") {
+          merged[key] = value;
+        }
+      });
+    }
+
+    const safeVal = (key, fallback = "") => {
+      if (merged[key] !== undefined && merged[key] !== null && merged[key] !== "") {
+        return merged[key];
+      }
+      return currentValues[key] !== undefined && currentValues[key] !== null ? currentValues[key] : fallback;
+    };
 
     form.setFieldsValue({
-      landDocumentArea: merged.landDocumentArea || "",
-      landDocumentRate: merged.landDocumentRate || "",
-      landDocumentValuation: merged.landDocumentValuation || "",
-      landPlanArea: merged.landPlanArea || "",
-      landPlanRate: merged.landPlanRate || "",
-      landPlanValuation: merged.landPlanValuation || "",
-      landSiteArea: merged.landSiteArea || merged.landAreaSite || "",
-      landSiteRate: merged.landSiteRate || merged.landRate || "",
-      landSiteValuation: merged.landSiteValuation || "",
-      constructionDocumentArea: merged.constructionDocumentArea || "",
-      constructionDocumentRate: merged.constructionDocumentRate || "",
-      constructionDocumentValuation: merged.constructionDocumentValuation || "",
-      constructionPlanArea: merged.constructionPlanArea || "",
-      constructionPlanRate: merged.constructionPlanRate || "",
-      constructionPlanValuation: merged.constructionPlanValuation || "",
-      constructionSiteArea:
-        merged.constructionSiteArea || merged.constructionAreaForValuation || "",
-      constructionSiteRate:
-        merged.constructionSiteRate || merged.constructionRate || "",
-      constructionSiteValuation: merged.constructionSiteValuation || "",
-      amenitiesDetails: merged.amenitiesDetails || "NA",
-      amenitiesValue: merged.amenitiesValue || "",
-      liftAvailable: merged.liftAvailable || "",
-      buildingHeight: merged.buildingHeight || "",
-      realizableValue: merged.realizableValue || "",
-      constructionStage: merged.constructionStage || "",
-      constructionStatus: merged.constructionStatus || "",
-      ValuationatPresentStage: merged.ValuationatPresentStage || "",
-      ValuationasperGovtGuideline: merged.ValuationasperGovtGuideline || "",
-      constructionEstimateByCustomer: merged.constructionEstimateByCustomer || "",
-      estimateRecommendedByValuer: merged.estimateRecommendedByValuer || "",
-      marketRatePerSqft: merged.marketRatePerSqft || "",
-      constructionAsPerPlan: merged.constructionAsPerPlan || "",
+      landDocumentArea: safeVal("landDocumentArea"),
+      landDocumentRate: safeVal("landDocumentRate"),
+      landDocumentValuation: safeVal("landDocumentValuation"),
+      landPlanArea: safeVal("landPlanArea"),
+      landPlanRate: safeVal("landPlanRate"),
+      landPlanValuation: safeVal("landPlanValuation"),
+      landSiteArea: safeVal("landSiteArea") || safeVal("landAreaSite"),
+      landSiteRate: safeVal("landSiteRate") || safeVal("landRate"),
+      landSiteValuation: safeVal("landSiteValuation"),
+      constructionDocumentArea: safeVal("constructionDocumentArea"),
+      constructionDocumentRate: safeVal("constructionDocumentRate"),
+      constructionDocumentValuation: safeVal("constructionDocumentValuation"),
+      constructionPlanArea: safeVal("constructionPlanArea"),
+      constructionPlanRate: safeVal("constructionPlanRate"),
+      constructionPlanValuation: safeVal("constructionPlanValuation"),
+      constructionSiteArea: safeVal("constructionSiteArea") || safeVal("constructionAreaForValuation"),
+      constructionSiteRate: safeVal("constructionSiteRate") || safeVal("constructionRate"),
+      constructionSiteValuation: safeVal("constructionSiteValuation"),
+      amenitiesDetails: safeVal("amenitiesDetails", "NA"),
+      amenitiesValue: safeVal("amenitiesValue"),
+      liftAvailable: safeVal("liftAvailable"),
+      buildingHeight: safeVal("buildingHeight"),
+      realizableValue: safeVal("realizableValue"),
+      constructionStage: safeVal("constructionStage"),
+      constructionStatus: safeVal("constructionStatus"),
+      ValuationatPresentStage: safeVal("ValuationatPresentStage"),
+      ValuationasperGovtGuideline: safeVal("ValuationasperGovtGuideline"),
+      constructionEstimateByCustomer: safeVal("constructionEstimateByCustomer"),
+      estimateRecommendedByValuer: safeVal("estimateRecommendedByValuer"),
+      marketRatePerSqft: safeVal("marketRatePerSqft"),
+      constructionAsPerPlan: safeVal("constructionAsPerPlan"),
     });
 
     const savedRemarks =

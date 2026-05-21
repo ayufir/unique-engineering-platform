@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const ValuationDetails = ({ onNext }) => {
+const ValuationDetails = ({ extractedData, onNext }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     description: 'Bungalow',
@@ -40,6 +40,36 @@ const ValuationDetails = ({ onNext }) => {
     engineerName: '',
     authorizedSignatory: ''
   });
+
+  React.useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const bounds = p.boundaries || {};
+      const val = p.valuation_details || {};
+      const accom = p.accommodation_details || {};
+
+      setFormData((prev) => ({
+        ...prev,
+        description: accom.type_of_structure || p.property_type || extractedData.description || prev.description,
+        landArea: val.plot_area_physical || extractedData.landArea || prev.landArea,
+        rate: val.land_rate || val.guideline_rate || extractedData.rate || prev.rate,
+        amount: val.land_value || extractedData.amount || prev.amount,
+        constructionRate: val.construction_rate || extractedData.constructionRate || prev.constructionRate,
+        applicableArea: val.carpet_area_measurement || val.total_built_up_area || extractedData.applicableArea || prev.applicableArea,
+        stageOfConstruction: p.construction_stage || extractedData.stageOfConstruction || prev.stageOfConstruction,
+        landPlotArea: val.plot_area_physical || extractedData.landPlotArea || prev.landPlotArea,
+        totalMarketValue: val.total_value || val.market_value || extractedData.totalMarketValue || prev.totalMarketValue,
+        guidelineValue: val.govt_rate || extractedData.guidelineValue || prev.guidelineValue,
+        forcedSaleValue: val.distress_value || extractedData.forcedSaleValue || prev.forcedSaleValue,
+        eastBoundary: bounds.east_actual || bounds.east_as_per_deed || extractedData.eastBoundary || prev.eastBoundary,
+        westBoundary: bounds.west_actual || bounds.west_as_per_deed || extractedData.westBoundary || prev.westBoundary,
+        northBoundary: bounds.north_actual || bounds.north_as_per_deed || extractedData.northBoundary || prev.northBoundary,
+        southBoundary: bounds.south_actual || bounds.south_as_per_deed || extractedData.southBoundary || prev.southBoundary,
+        remarks: p.remarks || extractedData.remarks || prev.remarks,
+        engineerName: p.valuer_name || extractedData.engineerName || prev.engineerName,
+      }));
+    }
+  }, [extractedData]);
 
   const handleChange = (e) => {
 

@@ -128,7 +128,7 @@
 
 import React, { useState, useEffect } from 'react';
 
-const PropertyDetails = ({ onNext }) => {
+const PropertyDetails = ({ extractedData, onNext }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -171,6 +171,42 @@ const PropertyDetails = ({ onNext }) => {
     totalConstructed: '',
     deviation: '',
   });
+
+  React.useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const accom = p.accommodation_details || {};
+      const propDet = p.property_details || {};
+      const val = p.valuation_details || {};
+
+      setFormData((prev) => ({
+        ...prev,
+        vacantOccupied: propDet.occupancy || extractedData.vacantOccupied || prev.vacantOccupied,
+        nameOfOccupant: p.occupant_name || p.owner_name || extractedData.nameOfOccupant || prev.nameOfOccupant,
+        relationWithApplicant: p.relationship_with_applicant || extractedData.relationWithApplicant || prev.relationWithApplicant,
+        propertyDemarcation: propDet.property_demarcated || extractedData.propertyDemarcation || prev.propertyDemarcation,
+        propertyIdentified: propDet.property_identification || extractedData.propertyIdentified || prev.propertyIdentified,
+        propertyIdentifiedThrough: propDet.property_identification_through || extractedData.propertyIdentifiedThrough || prev.propertyIdentifiedThrough,
+        typeOfStructure: accom.type_of_structure || extractedData.typeOfStructure || prev.typeOfStructure,
+        landPlotArea: val.plot_area_physical || extractedData.landPlotArea || prev.landPlotArea,
+        noOfUnitsOnFloor: propDet.no_of_units_on_each_floor || extractedData.noOfUnitsOnFloor || prev.noOfUnitsOnFloor,
+        noOfFloors: propDet.no_of_floors_actual || extractedData.noOfFloors || prev.noOfFloors,
+        noOfLifts: accom.lift_facility || extractedData.noOfLifts || prev.noOfLifts,
+        amenitiesAvailable: accom.amenities || extractedData.amenitiesAvailable || prev.amenitiesAvailable,
+        noOfRooms: accom.rooms_count || accom.flat_configuration || extractedData.noOfRooms || prev.noOfRooms,
+        qualityOfConstruction: accom.quality_of_construction || extractedData.qualityOfConstruction || prev.qualityOfConstruction,
+        exteriors: accom.exterior || extractedData.exteriors || prev.exteriors,
+        interiors: accom.interior || extractedData.interiors || prev.interiors,
+        ageOfProperty: accom.age_of_property || propDet.age_of_property || extractedData.ageOfProperty || prev.ageOfProperty,
+        residualLife: accom.residual_age || propDet.residual_age || extractedData.residualLife || prev.residualLife,
+        sanctionedPlans: p.approved_plan_details || extractedData.sanctionedPlans || prev.sanctionedPlans,
+        ownershipType: accom.property_holding || extractedData.ownershipType || prev.ownershipType,
+        propertyWithinMunicipalLimits: propDet.property_within_limit || extractedData.propertyWithinMunicipalLimits || prev.propertyWithinMunicipalLimits,
+        sanctionedPermissibleArea: val.plot_area_plan || extractedData.sanctionedPermissibleArea || prev.sanctionedPermissibleArea,
+        totalConstructed: val.total_built_up_area || extractedData.totalConstructed || prev.totalConstructed,
+      }));
+    }
+  }, [extractedData]);
 
   const handleChange = (e) => {
 

@@ -8,6 +8,7 @@ import Characteristic from "./form/Characteristic";
 import ValuationForm from "./form/ValuationForm";
 import DocumentPage from "./form/DocumentPage";
 import RemarksForm from "./form/RemarksForm";
+import AutoFillForm from "../../AutoFillForm";
 
 // Redux Thunk
 import { createExtendedValuation } from "../../../redux/features/Banks/sundaram/sundaramThunks";
@@ -20,6 +21,7 @@ const SundaramBank = () => {
 
   const [step, setStep] = useState(1);
   const [collectedData, setCollectedData] = useState({});
+  const [extractedData, setExtractedData] = useState({});
 
   const handleNext = async (formData) => {
     const updatedData = {
@@ -58,14 +60,16 @@ const SundaramBank = () => {
       <div className='max-w-6xl mx-auto bg-white shadow rounded p-6'>
         <div className='mb-6'>
           <h1 className='text-3xl font-bold'>Sundaram Bank Valuation Form</h1>
-          <p className='text-gray-500'>Step {step <= 4 ? step : 4} of 4</p>
+          <p className='text-gray-500'>Step {step <= 5 ? step : 5} of 5</p>
         </div>
 
-        {step === 1 && <PlanApprovalForm onNext={handleNext} />}
-        {step === 2 && <Characteristic onNext={handleNext} />}
-        {step === 3 && <ValuationForm onNext={handleNext} />}
-        {step === 4 && <DocumentPage onNext={handleNext} />}
-        {step === 5 && <RemarksForm onNext={handleNext} />}
+        <AutoFillForm setFormData={setExtractedData} />
+
+        {step === 1 && <PlanApprovalForm extractedData={extractedData} onNext={handleNext} />}
+        {step === 2 && <Characteristic extractedData={extractedData} onNext={handleNext} />}
+        {step === 3 && <ValuationForm extractedData={extractedData} onNext={handleNext} />}
+        {step === 4 && <DocumentPage extractedData={extractedData} onNext={handleNext} />}
+        {step === 5 && <RemarksForm extractedData={extractedData} onNext={handleNext} />}
 
         {step > 5 && (
           <div className='text-green-600 font-semibold'>

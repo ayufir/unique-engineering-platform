@@ -74,51 +74,93 @@ const LNTAssignmentDetails = ({
   };
 
   useEffect(() => {
-    const merged = { ...extractedData, ...isEdit };
-    setUploadedImagess(merged?.imageUrls || []);
-    setUploadedUrls(merged?.imageUrls || []);
-    setDocUrls(merged?.AttachDocuments || []);
+    const currentValues = form.getFieldsValue();
+    const merged = { ...isEdit };
+
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const addr = p.address || {};
+      const bankDet = p.bank_specific_details || {};
+      const accom = p.accommodation_details || {};
+      const propDet = p.property_details || {};
+      const loc = p.location_details || {};
+
+      const mapped = {
+        customerName: p.applicant_name || p.owner_name || extractedData.customerName,
+        customerNo: p.contact_number || p["Mobile No."] || extractedData.customerNo,
+        propertyName: p.property_type || accom.type_of_structure,
+        personMetDuringVisit: p.contact_person || extractedData.personMetDuringVisit,
+        propertyOwnerName: p.owner_name || extractedData.propertyOwnerName,
+        dateOfReport: p.dateOfReport || extractedData.dateOfReport || extractedData.reportDate,
+        refNo: bankDet.file_no || bankDet.lan_no || extractedData.registration_number || extractedData.refNo,
+        addressLegal: addr.full_address || extractedData.addressLegal,
+        addressSite: addr.full_address || extractedData.addressSite,
+        nearbyLandmark: loc.landmark || extractedData.nearbyLandmark,
+        statusOfOccupancy: propDet.occupancy || loc.occupancy_level,
+        occupiedBy: propDet.occupied_by,
+        usageOfProperty: p.property_use,
+        latitude: p.latitude || extractedData.latitude,
+        longitude: p.longitude || extractedData.longitude,
+      };
+
+      Object.entries(mapped).forEach(([key, val]) => {
+        if (val !== null && val !== undefined && val !== "") {
+          merged[key] = val;
+        }
+      });
+    }
+
+    setUploadedImagess(merged?.imageUrls || currentValues?.imageUrls || []);
+    setUploadedUrls(merged?.imageUrls || currentValues?.imageUrls || []);
+    setDocUrls(merged?.AttachDocuments || currentValues?.AttachDocuments || []);
 
     if (merged) {
       const parsedDate = merged.dateOfReport
         ? moment(merged.dateOfReport, moment.ISO_8601, true).isValid()
           ? moment(merged.dateOfReport)
           : moment(merged.dateOfReport, "DD.MM.YYYY")
-        : null;
+        : (currentValues.dateOfReport || null);
+
+      const safeVal = (key, fallback = "") => {
+        if (merged[key] !== undefined && merged[key] !== null && merged[key] !== "") {
+          return merged[key];
+        }
+        return currentValues[key] !== undefined && currentValues[key] !== null ? currentValues[key] : fallback;
+      };
 
       form.setFieldsValue({
-        customerName: merged.customerName || "",
-        customerNo: merged.customerNo || "",
-        propertyName: merged.propertyName || "",
-        personMetDuringVisit: merged.personMetDuringVisit || "",
-        personContactNo: merged.personContactNo || "",
-        relationshipOfPersonMet: merged.relationshipOfPersonMet || "SELF",
-        propertyOwnerName: merged.propertyOwnerName || "",
-        howFoundOwnerName: merged.howFoundOwnerName || "",
-        typeOfLoan: merged.typeOfLoan || "P+C",
+        customerName: safeVal("customerName"),
+        customerNo: safeVal("customerNo"),
+        propertyName: safeVal("propertyName"),
+        personMetDuringVisit: safeVal("personMetDuringVisit", "N/A"),
+        personContactNo: safeVal("personContactNo", "N/A"),
+        relationshipOfPersonMet: safeVal("relationshipOfPersonMet", "SELF"),
+        propertyOwnerName: safeVal("propertyOwnerName"),
+        howFoundOwnerName: safeVal("howFoundOwnerName"),
+        typeOfLoan: safeVal("typeOfLoan", "P+C"),
         dateOfReport: parsedDate,
-        refNo: merged.refNo || "",
-        evaluationType: merged.evaluationType || "",
-        unitType: merged.unitType || "OPEN PLOT",
-        propertyCategory: merged.propertyCategory || "INDIVIDUAL",
-        propertyLocation: merged.propertyLocation || "",
-        populationCensus2011: merged.populationCensus2011 || "Btw 10000 to 1.0 Lac",
-        ruralUrban: merged.ruralUrban || "",
-        zone: merged.zone || "Residential",
-        propertyAreaLimits: merged.propertyAreaLimits || "",
-        eraApplicable: merged.eraApplicable || "NA",
-        documentsAvailable: merged.documentsAvailable || "YES",
-        nameOnSocietyBoard: merged.nameOnSocietyBoard || "NA",
-        addressLegal: merged.addressLegal || "",
-        addressSite: merged.addressSite || "",
-        nameOnDoor: merged.nameOnDoor || "NA",
-        nearbyLandmark: merged.nearbyLandmark || "",
-        statusOfOccupancy: merged.statusOfOccupancy || "",
-        occupiedBy: merged.occupiedBy || "",
-        usageOfProperty: merged.usageOfProperty || "Residential",
-        propertyEasilyIdentifiable: merged.propertyEasilyIdentifiable || "YES",
-        latitude: merged.latitude || "",
-        longitude: merged.longitude || "",
+        refNo: safeVal("refNo", "N/A"),
+        evaluationType: safeVal("evaluationType", "N/A"),
+        unitType: safeVal("unitType", "OPEN PLOT"),
+        propertyCategory: safeVal("propertyCategory", "INDIVIDUAL"),
+        propertyLocation: safeVal("propertyLocation"),
+        populationCensus2011: safeVal("populationCensus2011", "Btw 10000 to 1.0 Lac"),
+        ruralUrban: safeVal("ruralUrban"),
+        zone: safeVal("zone", "Residential"),
+        propertyAreaLimits: safeVal("propertyAreaLimits"),
+        eraApplicable: safeVal("eraApplicable", "NA"),
+        documentsAvailable: safeVal("documentsAvailable", "YES"),
+        nameOnSocietyBoard: safeVal("nameOnSocietyBoard", "NA"),
+        addressLegal: safeVal("addressLegal"),
+        addressSite: safeVal("addressSite"),
+        nameOnDoor: safeVal("nameOnDoor", "NA"),
+        nearbyLandmark: safeVal("nearbyLandmark"),
+        statusOfOccupancy: safeVal("statusOfOccupancy"),
+        occupiedBy: safeVal("occupiedBy"),
+        usageOfProperty: safeVal("usageOfProperty", "Residential"),
+        propertyEasilyIdentifiable: safeVal("propertyEasilyIdentifiable", "YES"),
+        latitude: safeVal("latitude"),
+        longitude: safeVal("longitude"),
       });
     }
   }, [isEdit, extractedData, form]);

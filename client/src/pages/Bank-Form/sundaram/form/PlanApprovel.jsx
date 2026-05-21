@@ -4,8 +4,39 @@ import toast from "react-hot-toast";
 
 const { TextArea } = Input;
 
-const PlanApprovalForm = ({ onNext }) => {
+const PlanApprovalForm = ({ extractedData, onNext }) => {
   const [form] = Form.useForm();
+
+  React.useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const bounds = p.boundaries || {};
+      const propDet = p.property_details || {};
+      const loc = p.location_details || {};
+
+      form.setFieldsValue({
+        layoutApproval: p.layout_plan_approval || extractedData.layoutApproval || form.getFieldValue("layoutApproval"),
+        approvedNumber1: p.approval_no || extractedData.approvedNumber1 || form.getFieldValue("approvedNumber1"),
+        // antd DatePicker needs dayjs/moment object, handle string date elsewhere or map raw if possible. For now leaving dates to manual or string if it works
+        approvedAuthority1: p.approval_authority || extractedData.approvedAuthority1 || form.getFieldValue("approvedAuthority1"),
+        civicStatus: loc.civic_amenities || extractedData.civicStatus || form.getFieldValue("civicStatus"),
+        propertyIdentifiedBy: propDet.property_identification_through || extractedData.propertyIdentifiedBy || form.getFieldValue("propertyIdentifiedBy"),
+        plotDemarcation: propDet.property_demarcated || extractedData.plotDemarcation || form.getFieldValue("plotDemarcation"),
+        propCharacteristic: p.property_type || extractedData.propCharacteristic || form.getFieldValue("propCharacteristic"),
+        shapeOfLand: p.shape_of_land || extractedData.shapeOfLand || form.getFieldValue("shapeOfLand"),
+        reportedOwner: p.owner_name || p.property_owner || extractedData.reportedOwner || form.getFieldValue("reportedOwner"),
+        docNorth: bounds.north_as_per_deed || extractedData.docNorth || form.getFieldValue("docNorth"),
+        docSouth: bounds.south_as_per_deed || extractedData.docSouth || form.getFieldValue("docSouth"),
+        docEast: bounds.east_as_per_deed || extractedData.docEast || form.getFieldValue("docEast"),
+        docWest: bounds.west_as_per_deed || extractedData.docWest || form.getFieldValue("docWest"),
+        siteNorth: bounds.north_actual || extractedData.siteNorth || form.getFieldValue("siteNorth"),
+        siteSouth: bounds.south_actual || extractedData.siteSouth || form.getFieldValue("siteSouth"),
+        siteEast: bounds.east_actual || extractedData.siteEast || form.getFieldValue("siteEast"),
+        siteWest: bounds.west_actual || extractedData.siteWest || form.getFieldValue("siteWest"),
+        matchesDoc: extractedData.matchesDoc || form.getFieldValue("matchesDoc"),
+      });
+    }
+  }, [extractedData, form]);
 
   const handleFinish = (values) => {
     onNext(values);

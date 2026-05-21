@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
-const Boundaries = ({ isEdit, onNext, onBack }) => {
+const Boundaries = ({ isEdit, extractedData, onNext, onBack }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [formData, setFormData] = useState({
     east: "",
@@ -15,22 +15,46 @@ const Boundaries = ({ isEdit, onNext, onBack }) => {
     demarcationType: "",
   });
 
-  // Initialize formData when editing
+  // Initialize formData when editing or extracting
   useEffect(() => {
-    if (isEdit) {
-      setFormData({
-        east: isEdit.east || "",
-        west: isEdit.west || "",
-        north: isEdit.north || "",
-        south: isEdit.south || "",
-        boundariesMatching: isEdit.boundariesMatching || "",
-        remarks: isEdit.remarks || "",
-        propertyIdentifiedThrough: isEdit.propertyIdentifiedThrough || "",
-        propertyDemarcated: isEdit.propertyDemarcated || "",
-        demarcationType: isEdit.demarcationType || "",
-      });
-    }
-  }, [isEdit]);
+    setFormData((prev) => {
+      let newData = { ...prev };
+
+      if (isEdit) {
+        newData = {
+          ...newData,
+          east: isEdit.east || "",
+          west: isEdit.west || "",
+          north: isEdit.north || "",
+          south: isEdit.south || "",
+          boundariesMatching: isEdit.boundariesMatching || "",
+          remarks: isEdit.remarks || "",
+          propertyIdentifiedThrough: isEdit.propertyIdentifiedThrough || "",
+          propertyDemarcated: isEdit.propertyDemarcated || "",
+          demarcationType: isEdit.demarcationType || "",
+        };
+      }
+
+      if (extractedData && Object.keys(extractedData).length > 0) {
+        const p = extractedData.property || {};
+        const bounds = p.boundaries || {};
+        const propDet = p.property_details || {};
+
+        newData = {
+          ...newData,
+          east: bounds.east_actual || bounds.east_as_per_deed || extractedData.east || newData.east,
+          west: bounds.west_actual || bounds.west_as_per_deed || extractedData.west || newData.west,
+          north: bounds.north_actual || bounds.north_as_per_deed || extractedData.north || newData.north,
+          south: bounds.south_actual || bounds.south_as_per_deed || extractedData.south || newData.south,
+          boundariesMatching: extractedData.boundariesMatching || newData.boundariesMatching,
+          propertyIdentifiedThrough: propDet.property_identification || extractedData.propertyIdentifiedThrough || newData.propertyIdentifiedThrough,
+          propertyDemarcated: propDet.property_demarcated || extractedData.propertyDemarcated || newData.propertyDemarcated,
+        };
+      }
+
+      return newData;
+    });
+  }, [isEdit, extractedData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

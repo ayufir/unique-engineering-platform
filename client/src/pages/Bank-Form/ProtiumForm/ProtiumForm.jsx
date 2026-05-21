@@ -6,12 +6,14 @@ import ValuationDetails from "./ValuationReportForm";
 import SideBoundaries from "./SideBoundaries";
 import PlanApproval from "./PlanApproval";
 import ActualPlan from "./ActualPlan";
+import AutoFillForm from "../../AutoFillForm";
 
 import { createProtiumBank } from "../../../redux/features/Banks/Protium/ProtiumBankThunk";
 
 const ProtiumForm = () => {
   const [step, setStep] = useState(1);
   const [collectedData, setCollectedData] = useState({});
+  const [extractedData, setExtractedData] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -50,10 +52,12 @@ const ProtiumForm = () => {
       </h3>
       <p className='text-gray-600 mb-6'>Step {step <= 4 ? step : 4} of 4</p>
 
-      {step === 1 && <ActualPlan onNext={handleNext} />}
-      {step === 2 && <PlanApproval onNext={handleNext} />}
-      {step === 3 && <SideBoundaries onNext={handleNext} />}
-      {step === 4 && <ValuationDetails onNext={handleNext} />}
+      <AutoFillForm setFormData={setExtractedData} />
+
+      {step === 1 && <ActualPlan extractedData={extractedData} onNext={handleNext} />}
+      {step === 2 && <PlanApproval extractedData={extractedData} onNext={handleNext} />}
+      {step === 3 && <SideBoundaries extractedData={extractedData} onNext={handleNext} />}
+      {step === 4 && <ValuationDetails extractedData={extractedData} onNext={handleNext} />}
 
       {step > 4 && (
         <div className='text-green-600 font-semibold mt-4'>

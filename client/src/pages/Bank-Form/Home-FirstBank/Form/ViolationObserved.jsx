@@ -14,15 +14,40 @@ const ViolationObserved = ({
   const [form] = Form.useForm();
 
   useEffect(() => {
-    const merged = { ...extractedData, ...isEdit };
+    const currentValues = form.getFieldsValue();
+    const merged = { ...isEdit };
+
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const legal = p.legal_and_compliance || {};
+
+      const mapped = {
+        deviationToPlan: legal.deviation_from_plan || extractedData.deviationToPlan,
+        demolitionRisk: legal.risk_of_demolition || extractedData.demolitionRisk,
+      };
+
+      Object.entries(mapped).forEach(([key, val]) => {
+        if (val !== null && val !== undefined && val !== "") {
+          merged[key] = val;
+        }
+      });
+    }
+
     if (merged) {
+      const safeVal = (key, fallback = "") => {
+        if (merged[key] !== undefined && merged[key] !== null && merged[key] !== "") {
+          return merged[key];
+        }
+        return currentValues[key] !== undefined && currentValues[key] !== null ? currentValues[key] : fallback;
+      };
+
       form.setFieldsValue({
-        deviationToPlan: merged.deviationToPlan || "No",
-        deviationDetails: merged.deviationDetails || "NA",
-        demolitionRisk: merged.violationDemolitionRisk || merged.demolitionRiskViolation || "No",
-        demolitionDetails: merged.demolitionDetails || "NA",
-        encroachment: merged.encroachment || "No",
-        encroachmentDetails: merged.encroachmentDetails || "NA",
+        deviationToPlan: safeVal("deviationToPlan", "No"),
+        deviationDetails: safeVal("deviationDetails", "NA"),
+        demolitionRisk: safeVal("violationDemolitionRisk") || safeVal("demolitionRiskViolation") || safeVal("demolitionRisk", "No"),
+        demolitionDetails: safeVal("demolitionDetails", "NA"),
+        encroachment: safeVal("encroachment", "No"),
+        encroachmentDetails: safeVal("encroachmentDetails", "NA"),
       });
     }
   }, [isEdit, extractedData, form]);

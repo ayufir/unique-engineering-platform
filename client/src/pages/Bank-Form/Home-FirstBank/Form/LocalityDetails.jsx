@@ -220,32 +220,72 @@ const LocalityDetails = ({
   const [documents, setDocuments] = useState([]); // will be filled by GeneralDetails
 
   useEffect(() => {
-    const merged = { ...extractedData, ...isEdit };
+    const currentValues = form.getFieldsValue();
+    const merged = { ...isEdit };
+
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const loc = p.location_details || {};
+      const struct = p.structural_engineering || {};
+      const legal = p.legal_and_compliance || {};
+      const infra = p.infrastructure_details || {};
+
+      const mapped = {
+        localityDevelopment: loc.micro_location || extractedData.localityDevelopment,
+        approachRoadType: loc.physical_approach || extractedData.approachRoadType,
+        approachRoadWidth: loc.width_approach_road || extractedData.approachRoadWidth,
+        distanceFromCityCentre: loc.distance_city_centre || extractedData.distanceFromCityCentre,
+        distanceFromRailwayStation: loc.distance_railway_station || extractedData.distanceFromRailwayStation,
+        distanceFromBusStand: loc.distance_bus_stop || extractedData.distanceFromBusStand,
+        occupancyPercentage: loc.occupancy_level || extractedData.occupancyPercentage,
+        nallahRiverHighTension: loc.adverse_factors || extractedData.nallahRiverHighTension,
+        seismicZone: struct.seismic_zone || extractedData.seismicZone,
+        floodZone: struct.flood_prone_area || extractedData.floodZone,
+        demolitionRisk: legal.risk_of_demolition || extractedData.demolitionRisk,
+        electricityAvailability: infra.electricity_available || extractedData.electricityAvailability,
+        waterAvailability: infra.water_supply || extractedData.waterAvailability,
+        drainageAvailability: infra.sewer_line_connected || extractedData.drainageAvailability,
+      };
+
+      Object.entries(mapped).forEach(([key, val]) => {
+        if (val !== null && val !== undefined && val !== "") {
+          merged[key] = val;
+        }
+      });
+    }
+
     if (merged) {
+      const safeVal = (key, fallback = "") => {
+        if (merged[key] !== undefined && merged[key] !== null && merged[key] !== "") {
+          return merged[key];
+        }
+        return currentValues[key] !== undefined && currentValues[key] !== null ? currentValues[key] : fallback;
+      };
+
       form.setFieldsValue({
-        localityDevelopment: merged.localityDevelopment || "",
-        approachRoadType: merged.approachRoadType || "",
-        approachRoadWidth: merged.approachRoadWidth || "15ft",
-        distanceFromCityCentre: merged.distanceFromCityCentre || "",
-        distanceFromRailwayStation: merged.distanceFromRailwayStation || "",
-        distanceFromBusStand: merged.distanceFromBusStand || "",
-        distanceFromHospital: merged.distanceFromHospital || "",
-        occupancyPercentage: merged.occupancyPercentage || "",
-        habitationPercentage: merged.habitationPercentage || "",
-        nallahRiverHighTension: merged.nallahRiverHighTension || "NA",
-        seismicZone: merged.seismicZone || "II",
-        cycloneZone: merged.cycloneZone || "NO",
-        landslideProneZone: merged.landslideProneZone || "No",
-        floodZone: merged.floodZone || "NO",
-        crZone: merged.crZone || "NO",
-        demolitionRisk: merged.localityDemolitionRisk || merged.demolitionRisk || "LOW",
-        demolitionRiskDetails: merged.demolitionRiskDetails || "NA",
-        followsNDMAGuidelines: merged.followsNDMAGuidelines || "YES",
-        nearestCityTown: merged.nearestCityTown || merged.cityCentreName || "Bhopal",
-        locationCategory: merged.locationCategory || "MC",
-        electricityAvailability: merged.electricityAvailability || "YES",
-        waterAvailability: merged.waterAvailability || "YES",
-        drainageAvailability: merged.drainageAvailability || "YES",
+        localityDevelopment: safeVal("localityDevelopment"),
+        approachRoadType: safeVal("approachRoadType"),
+        approachRoadWidth: safeVal("approachRoadWidth", "15ft"),
+        distanceFromCityCentre: safeVal("distanceFromCityCentre"),
+        distanceFromRailwayStation: safeVal("distanceFromRailwayStation"),
+        distanceFromBusStand: safeVal("distanceFromBusStand"),
+        distanceFromHospital: safeVal("distanceFromHospital"),
+        occupancyPercentage: safeVal("occupancyPercentage"),
+        habitationPercentage: safeVal("habitationPercentage"),
+        nallahRiverHighTension: safeVal("nallahRiverHighTension", "NA"),
+        seismicZone: safeVal("seismicZone", "II"),
+        cycloneZone: safeVal("cycloneZone", "NO"),
+        landslideProneZone: safeVal("landslideProneZone", "No"),
+        floodZone: safeVal("floodZone", "NO"),
+        crZone: safeVal("crZone", "NO"),
+        demolitionRisk: safeVal("localityDemolitionRisk") || safeVal("demolitionRisk", "LOW"),
+        demolitionRiskDetails: safeVal("demolitionRiskDetails", "NA"),
+        followsNDMAGuidelines: safeVal("followsNDMAGuidelines", "YES"),
+        nearestCityTown: safeVal("nearestCityTown") || safeVal("cityCentreName", "Bhopal"),
+        locationCategory: safeVal("locationCategory", "MC"),
+        electricityAvailability: safeVal("electricityAvailability", "YES"),
+        waterAvailability: safeVal("waterAvailability", "YES"),
+        drainageAvailability: safeVal("drainageAvailability", "YES"),
       });
       if (merged.documents) setDocuments(merged.documents);
     }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
-const Valuation = ({ isEdit, onNext, onBack }) => {
+const Valuation = ({ isEdit, extractedData, onNext, onBack }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [formData, setFormData] = useState({
     landValueArea: "1981",
@@ -26,33 +26,54 @@ const Valuation = ({ isEdit, onNext, onBack }) => {
     totalRealisableValue: "₹0",
   });
 
-  // Initialize formData when editing
+  // Initialize formData when editing or extracting
   useEffect(() => {
-    if (isEdit) {
-      setFormData({
-        landValueArea: isEdit.landValueArea || "",
-        landValueRate: isEdit.landValueRate || "",
-        landValueDepreciation: isEdit.landValueDepreciation || "",
-        landValueAmount: isEdit.landValueAmount || "",
-        buildingValueArea: isEdit.buildingValueArea || "",
-        buildingValueRate: isEdit.buildingValueRate || "",
-        buildingValueDepreciation: isEdit.buildingValueDepreciation || "",
-        buildingValueAmount: isEdit.buildingValueAmount || "",
-        improvementArea: isEdit.improvementArea || "",
-        improvementRate: isEdit.improvementRate || "",
-        improvementDepreciation: isEdit.improvementDepreciation || "",
-        improvementAmount: isEdit.improvementAmount || "",
-        amenitiesAvailable: isEdit.amenitiesAvailable || "",
-        detailsOnInteriors: isEdit.detailsOnInteriors || "",
-        amenitiesValue: isEdit.amenitiesValue || "",
-        fixedInteriorsValue: isEdit.fixedInteriorsValue || "",
-        noOfCarParks: isEdit.noOfCarParks || "",
-        valueOfCarPark: isEdit.valueOfCarPark || "",
-        totalValueOfCarParks: isEdit.totalValueOfCarParks || "",
-        totalRealisableValue: isEdit.totalRealisableValue || "",
-      });
-    }
-  }, [isEdit]);
+    setFormData((prev) => {
+      let newData = { ...prev };
+
+      if (isEdit) {
+        newData = {
+          ...newData,
+          landValueArea: isEdit.landValueArea || "",
+          landValueRate: isEdit.landValueRate || "",
+          landValueDepreciation: isEdit.landValueDepreciation || "",
+          landValueAmount: isEdit.landValueAmount || "",
+          buildingValueArea: isEdit.buildingValueArea || "",
+          buildingValueRate: isEdit.buildingValueRate || "",
+          buildingValueDepreciation: isEdit.buildingValueDepreciation || "",
+          buildingValueAmount: isEdit.buildingValueAmount || "",
+          improvementArea: isEdit.improvementArea || "",
+          improvementRate: isEdit.improvementRate || "",
+          improvementDepreciation: isEdit.improvementDepreciation || "",
+          improvementAmount: isEdit.improvementAmount || "",
+          amenitiesAvailable: isEdit.amenitiesAvailable || "",
+          detailsOnInteriors: isEdit.detailsOnInteriors || "",
+          amenitiesValue: isEdit.amenitiesValue || "",
+          fixedInteriorsValue: isEdit.fixedInteriorsValue || "",
+          noOfCarParks: isEdit.noOfCarParks || "",
+          valueOfCarPark: isEdit.valueOfCarPark || "",
+          totalValueOfCarParks: isEdit.totalValueOfCarParks || "",
+          totalRealisableValue: isEdit.totalRealisableValue || "",
+        };
+      }
+
+      if (extractedData && Object.keys(extractedData).length > 0) {
+        const p = extractedData.property || {};
+        const val = p.valuation_details || {};
+
+        newData = {
+          ...newData,
+          landValueArea: val.plot_area_physical || val.plot_area_plan || val.plot_area_in_deed || newData.landValueArea,
+          landValueRate: val.land_rate || val.plot_area_physical_rate || newData.landValueRate,
+          buildingValueArea: val.carpet_area_measurement || val.carpet_area_plan || val.super_built_up_area || newData.buildingValueArea,
+          buildingValueRate: val.construction_rate || newData.buildingValueRate,
+          totalRealisableValue: val.total_value || val.market_rate || newData.totalRealisableValue,
+        };
+      }
+
+      return newData;
+    });
+  }, [isEdit, extractedData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

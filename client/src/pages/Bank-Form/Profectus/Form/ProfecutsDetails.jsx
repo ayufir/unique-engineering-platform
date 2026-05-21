@@ -395,8 +395,43 @@ import toast from "react-hot-toast";
 
 const { Option } = Select;
 
-const ProfecutsDetails = ({ onNext }) => {
+const ProfecutsDetails = ({ extractedData, onNext }) => {
   const [form] = Form.useForm();
+
+  React.useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const addr = p.address || {};
+      const accom = p.accommodation_details || {};
+      const propDet = p.property_details || {};
+
+      form.setFieldsValue({
+        nameOfProject: addr.project_name || addr.building_name || extractedData.nameOfProject,
+        developerName: p.developer_name || p.builder_name || extractedData.developerName,
+        totalNoOfBuildings: p.total_buildings || extractedData.totalNoOfBuildings,
+        buildingUnderConsideration: p.building_consideration || extractedData.buildingUnderConsideration,
+        reraId: p.rera_id || p.rera_registration_no || extractedData.reraId,
+        completionStatus: p.completion_status || p.construction_stage || extractedData.completionStatus,
+        expectedCompletionTime: p.expected_completion_time || extractedData.expectedCompletionTime,
+        amenities: accom.amenities || propDet.amenities || extractedData.amenities,
+        typeOfProject: p.property_type || extractedData.typeOfProject,
+        isProjectApproved: p.project_approved || extractedData.isProjectApproved,
+        approvalAuthority: p.approval_authority || extractedData.approvalAuthority,
+        isRERAApproved: p.rera_approved || extractedData.isRERAApproved,
+        occupancyCertificateAvailable: propDet.occupancy_certificate || extractedData.occupancyCertificateAvailable,
+        landTitle: accom.property_holding || extractedData.landTitle,
+        legalClearance: propDet.legal_clearance || extractedData.legalClearance,
+        noOfUnits: accom.rooms_count || extractedData.noOfUnits,
+        unitsSold: p.units_sold || extractedData.unitsSold,
+        layoutPlanApproval: p.layout_plan_approval || extractedData.layoutPlanApproval,
+        environmentalClearance: p.environmental_clearance || extractedData.environmentalClearance,
+        encumbrance: p.encumbrance || extractedData.encumbrance,
+        litigation: p.litigation || extractedData.litigation,
+        natureOfProject: p.property_sub_type || extractedData.natureOfProject,
+        sourceOfFunding: p.source_of_funding || extractedData.sourceOfFunding,
+      });
+    }
+  }, [extractedData, form]);
 
   const initialValues = {
     nameOfProject: "Sunset Towers",

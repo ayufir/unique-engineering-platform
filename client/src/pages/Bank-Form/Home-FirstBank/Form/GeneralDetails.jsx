@@ -400,34 +400,25 @@ const GeneralDetails = ({ isEdit, extractedData, onDocumentsChange }) => {
   useEffect(() => {
     const merged = { ...extractedData, ...isEdit };
     if (merged.documents && Array.isArray(merged.documents)) {
-      // const updatedDocs = defaultDocumentData.map((defaultDoc) => {
-      //   const existing = merged.documents.find((d) => d.type === defaultDoc.type);
-      //   return {
-      //     ...defaultDoc,
-      //     ...existing,
-      //     selectedApprovingAuthority: existing?.approvingAuthority || "",
-      //   };
-      // });
-
-      const updatedDocs = defaultDocumentData.map((defaultDoc) => {
-        const existing = merged.documents.find((d) => d.type === defaultDoc.type);
-
-        return {
-          ...defaultDoc,
-          ...existing,
-
-          // 🔥 FIX: array preserve karo
-          approvingAuthority: defaultDoc.approvingAuthority,
-
-          // selected value alag se set karo
-          selectedApprovingAuthority: existing?.approvingAuthority || "",
-        };
+      setDocuments((prevDocs) => {
+        return prevDocs.map((doc) => {
+          const existing = merged.documents.find((d) => d.type === doc.type);
+          if (!existing) return doc;
+          return {
+            ...doc,
+            approvingAuthority: doc.approvingAuthority,
+            selectedApprovingAuthority: existing.approvingAuthority !== undefined && existing.approvingAuthority !== "" 
+              ? existing.approvingAuthority 
+              : (doc.selectedApprovingAuthority || ""),
+            approvalDate: existing.approvalDate !== undefined && existing.approvalDate !== "" 
+              ? existing.approvalDate 
+              : (doc.approvalDate || ""),
+            approvalDetails: existing.approvalDetails !== undefined && existing.approvalDetails !== "" 
+              ? existing.approvalDetails 
+              : (doc.approvalDetails || ""),
+          };
+        });
       });
-
-      console.log(updatedDocs, "ASDFGHJKL");
-
-
-      setDocuments(updatedDocs);
     }
   }, [isEdit, extractedData]);
 

@@ -627,6 +627,25 @@ const BoundriesDetails = ({ onDataChange }) => {
     longitude: "",
   });
 
+  useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const bounds = p.boundaries || {};
+      const addr = p.address || {};
+
+      setFormData((prev) => ({
+        ...prev,
+        east: bounds.east_actual || bounds.east_as_per_deed || extractedData.east || prev.east,
+        west: bounds.west_actual || bounds.west_as_per_deed || extractedData.west || prev.west,
+        north: bounds.north_actual || bounds.north_as_per_deed || extractedData.north || prev.north,
+        south: bounds.south_actual || bounds.south_as_per_deed || extractedData.south || prev.south,
+        boundariesMatching: extractedData.boundariesMatching || prev.boundariesMatching,
+        latitude: addr.latitude || extractedData.latitude || prev.latitude,
+        longitude: addr.longitude || extractedData.longitude || prev.longitude,
+      }));
+    }
+  }, [extractedData]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({

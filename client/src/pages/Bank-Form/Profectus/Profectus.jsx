@@ -60,10 +60,12 @@ import { useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { createBankReport } from "../../../redux/features/Banks/Profectus/profectusThunks";
 import toast from "react-hot-toast";
+import AutoFillForm from "../../AutoFillForm";
 
 const Profectus = () => {
   const [step, setStep] = useState(1);
   const [collectedData, setCollectedData] = useState({});
+  const [extractedData, setExtractedData] = useState({});
 
   // console.log(collectedData, "COLLECTED DATA");
 
@@ -110,9 +112,11 @@ const Profectus = () => {
           <p className='text-gray-600'>Step {step <= 3 ? step : 3} of 3</p>
         </div>
 
-        {step === 1 && <ProfecutsDetails onNext={handleNext} />}
-        {step === 2 && <PropertyDetails onNext={handleNext} />}
-        {step === 3 && <ValuationDetails onNext={handleNext} />}
+        <AutoFillForm setFormData={setExtractedData} />
+
+        {step === 1 && <ProfecutsDetails extractedData={extractedData} onNext={handleNext} />}
+        {step === 2 && <PropertyDetails extractedData={extractedData} onNext={handleNext} />}
+        {step === 3 && <ValuationDetails extractedData={extractedData} onNext={handleNext} />}
 
         {step > 3 && (
           <div className='text-green-600 font-semibold'>

@@ -1191,6 +1191,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { finalUpdate } from '../../../redux/features/case/caseThunks';
 import toast from 'react-hot-toast';
+import AutoFillForm from "../../AutoFillForm";
 
 const API = 'https://banker-backend-8ttk.onrender.com/api';
 
@@ -1484,11 +1485,103 @@ function ValuationForm({ id, onSave, onSubmit }) {
   const user = useSelector((state) => state.auth.user);
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);
+  const [extractedData, setExtractedData] = useState({});
   const [formData, setFormData] = useState({
     step1: { frontElevation: [], kitchen: [], selfie: [], otherImages: [] },
     step2: { kitchenImages: [], otherImages: [] },
     step3: {}, step4: {}, step5: {}, step6: { floors: [] }, step7: {}, step8: { uploadedDocs: [] }
   });
+
+  useEffect(() => {
+    if (Object.keys(extractedData).length > 0) {
+      setFormData(prev => {
+        const d1 = prev.step1 || {};
+        const d2 = prev.step2 || {};
+        const d3 = prev.step3 || {};
+        const d4 = prev.step4 || {};
+        const d5 = prev.step5 || {};
+        const d6 = prev.step6 || { floors: [] };
+        const d7 = prev.step7 || {};
+        
+        return {
+          ...prev,
+          step1: {
+            ...d1,
+            applicantName: extractedData.borrowerName || extractedData.applicantName || extractedData.customerName || d1.applicantName,
+            valuerName: extractedData.valuerName || d1.valuerName,
+            contactPerson: extractedData.personMetDuringVisit || d1.contactPerson,
+            contactNo: extractedData.contactNumber || d1.contactNo,
+            personMetAtSite: extractedData.personMetDuringVisit || d1.personMetAtSite,
+            propertyOwner: extractedData.propertyOwnerName || d1.propertyOwner,
+            dateOfReport: extractedData.dateOfReport || extractedData.reportDate || d1.dateOfReport,
+          },
+          step2: {
+            ...d2,
+            propertyPincode: extractedData.pincode || extractedData.projectPinCode || d2.propertyPincode,
+            propertyCity: extractedData.city || d2.propertyCity,
+            propertyState: extractedData.state || extractedData.projectState || d2.propertyState,
+            addressAsPerSite: extractedData.propertyAddress || extractedData.addressSite || d2.addressAsPerSite,
+            localityName: extractedData.locality || extractedData.mainLocality || d2.localityName,
+            landmarkNearBy: extractedData.landmark || d2.landmarkNearBy,
+            distanceFromCityCenter: extractedData.distanceCityCentre || d2.distanceFromCityCenter,
+            floorNo: extractedData.unitNo || extractedData.unitType || d2.floorNo,
+            latitude: extractedData.latitude || d2.latitude,
+            longitude: extractedData.longitude || d2.longitude,
+            propertyHoldingType: extractedData.propertyHolding || extractedData.ownershipType || d2.propertyHoldingType,
+            marketability: extractedData.marketability || d2.marketability,
+            propertyOccupiedBy: extractedData.occupiedBy || extractedData.occupancy || d2.propertyOccupiedBy,
+            typeOfProperty: extractedData.typeOfStructure || extractedData.propertySubType || d2.typeOfProperty,
+          },
+          step3: {
+            ...d3,
+            northAsPerSite: extractedData.northActual || d3.northAsPerSite,
+            southAsPerSite: extractedData.southActual || d3.southAsPerSite,
+            eastAsPerSite: extractedData.eastActual || d3.eastAsPerSite,
+            westAsPerSite: extractedData.westActual || d3.westAsPerSite,
+            northAsPerDeed: extractedData.northDocument || d3.northAsPerDeed,
+            southAsPerDeed: extractedData.southDocument || d3.southAsPerDeed,
+            eastAsPerDeed: extractedData.eastDocument || d3.eastAsPerDeed,
+            westAsPerDeed: extractedData.westDocument || d3.westAsPerDeed,
+            boundariesMatching: extractedData.boundariesMatching || d3.boundariesMatching,
+            approachRoadSize: extractedData.widthApproachRoad || d3.approachRoadSize,
+          },
+          step4: {
+            ...d4,
+            natureOfBuilding: extractedData.typeOfStructure || d4.natureOfBuilding,
+            structureType: extractedData.typeOfStructure || d4.structureType,
+            sanctionedPlanProvided: extractedData.sanctionPlanProvided || d4.sanctionedPlanProvided,
+          },
+          step5: {
+            ...d5,
+            landAreaPlan: extractedData.landPlanArea || extractedData.plotAreaInDeed || d5.landAreaPlan,
+            landAreaDoc: extractedData.landDocumentArea || extractedData.plotAreaInDeed || d5.landAreaDoc,
+            landAreaSite: extractedData.landSiteArea || extractedData.plotAreaPhysical || d5.landAreaSite,
+            carpetAreaAsPerDocument: extractedData.carpetAreaPlan || d5.carpetAreaAsPerDocument,
+            actualConstructionSBUA: extractedData.superBuiltUpArea || d5.actualConstructionSBUA,
+            statusOfProperty: extractedData.occupancyLevel || extractedData.conditionOfSite || d5.statusOfProperty,
+            percentCompleted: extractedData.completionPercentage || d5.percentCompleted,
+            currentAgeOfProperty: extractedData.ageOfProperty || d5.currentAgeOfProperty,
+            constructionQuality: extractedData.qualityOfConstruction || d5.constructionQuality,
+            liftAvailable: extractedData.liftFacility || d5.liftAvailable,
+          },
+          step6: {
+            ...d6,
+            plotArea: extractedData.plotArea || extractedData.LandArea || d6.plotArea,
+          },
+          step7: {
+            ...d7,
+            landArea: extractedData.landArea || extractedData.plotArea || d7.landArea,
+            tentativeLandRate: extractedData.landRate || d7.tentativeLandRate,
+            landValue: extractedData.totalValue || d7.landValue,
+            governmentValue: extractedData.governmentValue || d7.governmentValue,
+            distressedValue: extractedData.distressValue || d7.distressedValue,
+            valuationMethodology: extractedData.valuationMethodology || d7.valuationMethodology,
+            remarks: extractedData.reportRemarks || extractedData.commentsOnProperty || d7.remarks,
+          }
+        };
+      });
+    }
+  }, [extractedData]);
 
   useEffect(() => {
     if (id) {
@@ -1579,6 +1672,11 @@ function ValuationForm({ id, onSave, onSubmit }) {
           </div>
         ))}
       </div>
+      
+      <div style={{ margin: "20px 20px 0 20px" }}>
+        <AutoFillForm setFormData={setExtractedData} />
+      </div>
+
       <div style={s.main}>
         {/* STEP 1 */}
         {currentStep === 1 && (

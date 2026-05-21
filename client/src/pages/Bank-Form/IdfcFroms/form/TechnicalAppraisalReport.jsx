@@ -338,9 +338,9 @@
 // };
 
 // export default TechnicalAppraisalReport;
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-const TechnicalAppraisalReport = ({ onDataChange }) => {
+const TechnicalAppraisalReport = ({ onDataChange, extractedData }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     branchName: "",
@@ -368,6 +368,35 @@ const TechnicalAppraisalReport = ({ onDataChange }) => {
     landmark: "",
     cityCentreDistance: "",
   });
+
+  useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const addr = p.address || {};
+      const loc = p.location_details || {};
+      const bankDet = p.bank_specific_details || {};
+      const accom = p.accommodation_details || {};
+
+      setFormData((prev) => ({
+        ...prev,
+        caseRefNo: bankDet.file_no || bankDet.lan_no || extractedData.caseReferenceNumber || extractedData.registration_number || prev.caseRefNo,
+        contactPersonName: p.contact_person || extractedData.contactPersonName || prev.contactPersonName,
+        contactPersonNumber: p.contact_number || p["Mobile No."] || extractedData.contactPersonNumber || prev.contactPersonNumber,
+        applicantNames: p.applicant_name || p.owner_name || extractedData.applicantNames || prev.applicantNames,
+        propertyType: p.property_type || accom.type_of_structure || extractedData.propertyType || prev.propertyType,
+        currentUsage: p.property_use || extractedData.currentUsage || prev.currentUsage,
+        siteAddress: addr.full_address || extractedData.siteAddress || prev.siteAddress,
+        documentAddress: addr.full_address || extractedData.documentAddress || prev.documentAddress,
+        location: loc.micro_location || extractedData.location || prev.location,
+        localityClass: loc.micro_location || extractedData.localityClass || prev.localityClass,
+        siteDevelopment: loc.micro_location || extractedData.siteDevelopment || prev.siteDevelopment,
+        railwayStationDistance: loc.distance_railway_station || extractedData.railwayStationDistance || prev.railwayStationDistance,
+        busStopDistance: loc.distance_bus_stop || extractedData.busStopDistance || prev.busStopDistance,
+        landmark: loc.landmark || extractedData.landmark || prev.landmark,
+        cityCentreDistance: loc.distance_city_centre || extractedData.cityCentreDistance || prev.cityCentreDistance,
+      }));
+    }
+  }, [extractedData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

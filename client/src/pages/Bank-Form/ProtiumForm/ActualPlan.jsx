@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const ActualPlanDetails = ({ onNext }) => {
+const ActualPlanDetails = ({ extractedData, onNext }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [floors, setFloors] = useState([
     {
@@ -36,7 +36,36 @@ const ActualPlanDetails = ({ onNext }) => {
 9. BUILDING PRAKOSHT RECEIVE AS PER PRAKOSHT SHOP NO. 03 AREA IS 472 SQFT, BUT AS PER DEED AND ACTUAL AT SITE BUILT UP AREA IS 300 SQFT, WE HAVE CONSIDER BUILT UP AREA AS PER DEED.
 10. UNIT VALUE OF PROPERTY IS CONSIDER IN THIS REPORT.
 11. VALUER IS NOT RESPONSIBLE FOR ANY LEGAL DISPUTE.`,
+    applicantName: "",
+    date: "2023-05-16",
+    leadId: "A068301-LAP",
   });
+
+  React.useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const val = p.valuation_details || {};
+      const propDet = p.property_details || {};
+
+      setformData((prev) => ({
+        ...prev,
+        buildingValue: val.building_value || extractedData.buildingValue || prev.buildingValue,
+        amenities: propDet.amenities || extractedData.amenities || prev.amenities,
+        totalBuildingValue: val.total_building_value || extractedData.totalBuildingValue || prev.totalBuildingValue,
+        totalValueOfProperty: val.total_value || val.market_value || extractedData.totalValueOfProperty || prev.totalValueOfProperty,
+        marketValue: val.market_value || val.total_value || extractedData.marketValue || prev.marketValue,
+        distressedSaleValue: val.distress_value || extractedData.distressedSaleValue || prev.distressedSaleValue,
+        govtGuidelineValue: val.guideline_rate || val.govt_rate || extractedData.govtGuidelineValue || prev.govtGuidelineValue,
+        landValue: val.land_value || extractedData.landValue || prev.landValue,
+        totalGovtValue: val.total_govt_value || extractedData.totalGovtValue || prev.totalGovtValue,
+        riskAssessment: p.risk_assessment || extractedData.riskAssessment || prev.riskAssessment,
+        remarks: p.remarks || extractedData.remarks || prev.remarks,
+        applicantName: p.applicant_name || p.owner_name || extractedData.applicantName || prev.applicantName,
+        date: p.date_of_report || p.date_of_inspection || extractedData.date || prev.date,
+        leadId: p.case_reference_no || extractedData.leadId || prev.leadId,
+      }));
+    }
+  }, [extractedData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

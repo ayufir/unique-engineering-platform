@@ -60,6 +60,8 @@ import { createDetails } from "../../../redux/features/Banks/IDFCbank/idfclThunk
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 
+import AutoFillForm from "../../AutoFillForm";
+
 const IDFCForm = () => {
   const navigate = useNavigate();
 
@@ -67,6 +69,7 @@ const IDFCForm = () => {
   const [propertyDetail, setPropertyDetail] = useState({});
   const [floorRevenue, setFloorRevenue] = useState({});
   const [boundryDetail, setBoundryDetail] = useState({});
+  const [extractedData, setExtractedData] = useState({});
 
   const dispatch = useDispatch();
 
@@ -104,10 +107,12 @@ const IDFCForm = () => {
         <h1 className="text-2xl font-bold mb-4">IDFC Bank Report Form</h1>
         <p className="text-gray-500 mb-6"></p>
 
-        <TechnicalAppraisalReport onDataChange={setTechnicalApprisalData} />
-        <PropertyDetails onDataChange={setPropertyDetail} />
-        <FloorRevenue onDataChange={setFloorRevenue} />
-        <BoundriesDetails onDataChange={setBoundryDetail} />
+        <AutoFillForm setFormData={setExtractedData} />
+
+        <TechnicalAppraisalReport onDataChange={setTechnicalApprisalData} extractedData={extractedData} />
+        <PropertyDetails onDataChange={setPropertyDetail} extractedData={extractedData} />
+        <FloorRevenue onDataChange={setFloorRevenue} extractedData={extractedData} />
+        <BoundriesDetails onDataChange={setBoundryDetail} extractedData={extractedData} />
         {loading && <p className="text-blue-600">Submitting...</p>}
         {error && <p className="text-red-600">Error: {error}</p>}
 

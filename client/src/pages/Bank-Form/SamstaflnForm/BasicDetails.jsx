@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 
-const BasicDetails = ({ onNext }) => {
+const BasicDetails = ({ extractedData, onNext }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     branchName: "BHOPAL",
@@ -26,6 +26,39 @@ const BasicDetails = ({ onNext }) => {
     mainLocality: "Middle Class",
     previousValuation: "No"
   });
+
+  React.useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const addr = p.address || {};
+      const loc = p.location_details || {};
+      const propDet = p.property_details || {};
+
+      setFormData((prev) => ({
+        ...prev,
+        branchName: p.branch_name || extractedData.branchName || prev.branchName,
+        valuerName: p.valuer_name || extractedData.valuerName || prev.valuerName,
+        typeOfCase: p.type_of_case || extractedData.typeOfCase || prev.typeOfCase,
+        lanNo: p.case_reference_no || extractedData.lanNo || prev.lanNo,
+        dateOfVisit: p.date_of_inspection || extractedData.dateOfVisit || prev.dateOfVisit,
+        dateOfReport: p.date_of_report || extractedData.dateOfReport || prev.dateOfReport,
+        contactedPerson: p.contact_person || extractedData.contactedPerson || prev.contactedPerson,
+        applicantsName: p.applicant_name || extractedData.applicantsName || prev.applicantsName,
+        propertyOwner: p.owner_name || p.property_owner || extractedData.propertyOwner || prev.propertyOwner,
+        documentHolder: p.document_holder || extractedData.documentHolder || prev.documentHolder,
+        originalPropertyType: p.property_type || extractedData.originalPropertyType || prev.originalPropertyType,
+        currentUsage: propDet.occupancy || extractedData.currentUsage || prev.currentUsage,
+        addressAsPerRequest: addr.full_address || extractedData.addressAsPerRequest || prev.addressAsPerRequest,
+        addressAtSite: addr.full_address || extractedData.addressAtSite || prev.addressAtSite,
+        addressAsPerDocument: addr.full_address || extractedData.addressAsPerDocument || prev.addressAsPerDocument,
+        pinCode: addr.pincode || extractedData.pinCode || prev.pinCode,
+        latitude: p.latitude || extractedData.latitude || prev.latitude,
+        longitude: p.longitude || extractedData.longitude || prev.longitude,
+        mainLocality: loc.type_of_locality || extractedData.mainLocality || prev.mainLocality,
+        previousValuation: p.previous_valuation || extractedData.previousValuation || prev.previousValuation,
+      }));
+    }
+  }, [extractedData]);
 
   const handleChange = (e) => {
 

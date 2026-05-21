@@ -288,7 +288,7 @@ export default function BajajHousingView() {
             </button>
           )}
 
-          <button onClick={handlePrint} style={{ background: '#e31837', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>⬇ Download / Print</button>
+          <button onClick={handlePrint} style={{ background: '#e31837', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>Save as PDF / Print</button>
           <button onClick={() => window.history.back()} style={{ background: '#6c757d', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 13 }}>← Back</button>
         </div>
       </div>

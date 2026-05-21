@@ -70,6 +70,7 @@ import BasicDetails from "./BasicDetails";
 import SurroundingDetails from "./SurroundingDetails";
 import PropertyDetails from "./PropertyDetails";
 import ValuationDetails from "./ValuationDetails";
+import AutoFillForm from "../../AutoFillForm";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { createSamstaflnBank } from "../../../redux/features/Banks/SamstaflnBankForm/SamstaflnBankThunk";
@@ -77,6 +78,7 @@ import { createSamstaflnBank } from "../../../redux/features/Banks/SamstaflnBank
 const SamstaflnBankForm = () => {
   const [step, setStep] = useState(1);
   const [collectedData, setCollectedData] = useState({});
+  const [extractedData, setExtractedData] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -119,10 +121,12 @@ const SamstaflnBankForm = () => {
       </h3>
       <p className='text-gray-600 mb-4'>Step {step <= 4 ? step : 4} of 4</p>
 
-      {step === 1 && <BasicDetails onNext={handleNext} />}
-      {step === 2 && <SurroundingDetails onNext={handleNext} />}
-      {step === 3 && <PropertyDetails onNext={handleNext} />}
-      {step === 4 && <ValuationDetails onNext={handleNext} />}
+      <AutoFillForm setFormData={setExtractedData} />
+
+      {step === 1 && <BasicDetails extractedData={extractedData} onNext={handleNext} />}
+      {step === 2 && <SurroundingDetails extractedData={extractedData} onNext={handleNext} />}
+      {step === 3 && <PropertyDetails extractedData={extractedData} onNext={handleNext} />}
+      {step === 4 && <ValuationDetails extractedData={extractedData} onNext={handleNext} />}
 
       {step > 4 && (
         <div className='text-green-600 font-semibold mt-4'>

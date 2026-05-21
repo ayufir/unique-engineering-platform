@@ -22,28 +22,52 @@ const ManapuramFormTwo = ({ isEdit, onDataChange }) => {
     forcedSaleValue: "",
   });
 
-  // Initialize formData when editing
+  // Initialize formData when editing or extracting
   useEffect(() => {
-    if (isEdit) {
-      setFormData({
-        landComponentArea: isEdit.landComponentArea || "",
-        landComponentRate: isEdit.landComponentRate || "",
-        landComponentValue: isEdit.landComponentValue || "",
-        landComponentPMARea: isEdit.landComponentPMARea || "",
-        landComponentPMRRate: isEdit.landComponentPMRRate || "",
-        landComponentPMRValue: isEdit.landComponentPMRValue || "",
-        constructionComponentArea: isEdit.constructionComponentArea || "",
-        constructionComponentRate: isEdit.constructionComponentRate || "",
-        constructionComponentValue: isEdit.constructionComponentValue || "",
-        totalValue: isEdit.totalValue || "",
-        distressSaleValue: isEdit.distressSaleValue || "",
-        observations: ` `,
-        propertyDescription: isEdit.propertyDescription || "",
-        presentMarketValue: isEdit.presentMarketValue || "",
-        forcedSaleValue: isEdit.forcedSaleValue || "",
-      });
-    }
-  }, [isEdit]);
+    setFormData((prev) => {
+      let newData = { ...prev };
+
+      if (isEdit) {
+        newData = {
+          ...newData,
+          landComponentArea: isEdit.landComponentArea || "",
+          landComponentRate: isEdit.landComponentRate || "",
+          landComponentValue: isEdit.landComponentValue || "",
+          landComponentPMARea: isEdit.landComponentPMARea || "",
+          landComponentPMRRate: isEdit.landComponentPMRRate || "",
+          landComponentPMRValue: isEdit.landComponentPMRValue || "",
+          constructionComponentArea: isEdit.constructionComponentArea || "",
+          constructionComponentRate: isEdit.constructionComponentRate || "",
+          constructionComponentValue: isEdit.constructionComponentValue || "",
+          totalValue: isEdit.totalValue || "",
+          distressSaleValue: isEdit.distressSaleValue || "",
+          observations: isEdit.observations || ` `,
+          propertyDescription: isEdit.propertyDescription || "",
+          presentMarketValue: isEdit.presentMarketValue || "",
+          forcedSaleValue: isEdit.forcedSaleValue || "",
+        };
+      }
+
+      if (extractedData && Object.keys(extractedData).length > 0) {
+        const p = extractedData.property || {};
+        const val = p.valuation_details || {};
+
+        newData = {
+          ...newData,
+          landComponentArea: val.plot_area_physical || val.plot_area_plan || val.plot_area_in_deed || newData.landComponentArea,
+          landComponentRate: val.land_rate || val.plot_area_physical_rate || newData.landComponentRate,
+          constructionComponentArea: val.carpet_area_measurement || val.carpet_area_plan || val.super_built_up_area || newData.constructionComponentArea,
+          constructionComponentRate: val.construction_rate || newData.constructionComponentRate,
+          totalValue: val.total_value || newData.totalValue,
+          distressSaleValue: val.distress_value || newData.distressSaleValue,
+          presentMarketValue: val.total_value || val.market_rate || newData.presentMarketValue,
+          forcedSaleValue: val.distress_value || newData.forcedSaleValue,
+        };
+      }
+
+      return newData;
+    });
+  }, [isEdit, extractedData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

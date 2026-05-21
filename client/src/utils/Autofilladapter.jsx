@@ -129,6 +129,131 @@ export const applyMappedFields = (baseObject, mappedFields) => {
     return nextState;
 };
 
+const DROPDOWN_OPTIONS = {
+    // Aditya Birla
+    "locationDetails.valuatorDoneBefore": ["No", "Yes"],
+    "locationDetails.propertyType": ["Commercial", "Residential", "Industrial", "Institutional", "Agriculture"],
+    "locationDetails.locality": ["Well Developed", "Developing", "Under Develop", "Slum"],
+    "locationDetails.propertyFallingWithin": ["Municipal Corporation", "Gram Panchayat", "Town Planning Authority", "Development Authority", "Municipality"],
+    "locationDetails.occupancyLevel": ["Densely Populated", "Moderately Populated", "Low Population density"],
+    "locationDetails.conditionOfSite": ["Well Developed", "Developing", "Under Developed"],
+    "locationDetails.distancePlotMainRoad": ["Not Applicable (Prop on Md Road)", "Less than 200 m", "200 to 500 m", "above 500 m"],
+    "locationDetails.widthApproachRoad": ["Width is >40 ft.", "Width 20 to 40 ft.", "Clear width <10ft", "Mud Road", "Illegal Road (Without document)"],
+    "locationDetails.physicalApproach": ["Clear", "Partially Clear", "Not Clear"],
+    "locationDetails.legalApproach": ["Clear", "Partially Clear", "Not Clear"],
+    "locationDetails.otherFeatures": ["YES", "NO"],
+    "propertyDetails.occupancy": ["Occupied", "Vacant", "Self Occupied"],
+    "propertyDetails.propertyDemarcated": ["Yes", "No"],
+    "propertyDetails.propertyIdentification": ["YES", "NO"],
+    "boundaryDetails.boundaryMatching": ["YES", "NO"],
+    "accommodationDetails.flatType": ["Normal", "Duplex", "Penthouse"],
+    "accommodationDetails.flatConfiguration": ["1 BHK", "2 BHK", "3 BHK", "4 BHK", "NA"],
+    "accommodationDetails.propertyHolding": ["Freehold", "Leasehold"],
+    "accommodationDetails.liftFacility": ["YES / N", "YES", "NO"],
+    "accommodationDetails.parkingFacility": ["YES / N", "YES", "NO"],
+    "accommodationDetails.qualityOfConstruction": ["Class A", "Class B", "Class C"],
+    "accommodationDetails.typeOfParking": ["Open CP", "Stilt CP", "Basement CP", "NA"],
+    "accommodationDetails.shapeOfProperty": ["Regular", "Irregular"],
+    "accommodationDetails.amenities": ["Excellent", "Good", "Average", "Poor"],
+    "accommodationDetails.marketability": ["Excellent", "Good", "Average", "Poor"],
+    "accommodationDetails.exteriorsOfProperty": ["Excellent", "Good", "Average", "Poor"],
+    "accommodationDetails.interiorsOfProperty": ["Excellent", "Good", "Average", "Poor"],
+    "accommodationDetails.maintenanceOfProperty": ["Excellent", "Good", "Average", "Poor"],
+    "accommodationDetails.cautiousLocation": ["YES", "NO", "NA"],
+    "builtUpArea.groundFloorDeviation": ["No", "Yes"],
+    "builtUpArea.firstFloorDeviation": ["No", "Yes"],
+    "builtUpArea.totalDeviation": ["No", "Yes"],
+
+    // Manappuram
+    "propertyInfo.documentProduced": ["SALEDEED", "PARTITION DEED", "GIFT DEED", "SETTLEMENT DEED", "WILL DEED", "OTHER"],
+    "propertyInfo.typeOfProperty": ["RESIDENTIAL", "COMMERCIAL", "INDUSTRIAL", "AGRICULTURAL"],
+    "propertyInfo.currentUsage": ["RESIDENTIAL", "COMMERCIAL", "INDUSTRIAL", "AGRICULTURAL", "OPEN PLOT"],
+    "propertyInfo.holdingType": ["Free Hold", "Lease Hold"],
+    "propertyInfo.propertyUsage": ["RESIDENTIAL", "COMMERCIAL", "INDUSTRIAL", "AGRICULTURAL", "OPEN PLOT"],
+    "propertyInfo.occupancyStatus": ["VACANT", "OCCUPIED BY OWNER", "TENANTED"],
+    "propertyInfo.locationOfProperty": ["METROPOLITAN", "URBAN", "SEMI URBAN", "RURAL"],
+    "siteBoundaries.boundariesTallied": ["YES", "NO"],
+    "accessibility.connectivity": ["Good", "Average", "Poor"],
+    "accessibility.siteAccess": ["WELL DEV", "UNDER DEV", "NO ACCESS"],
+    "accessibility.withinMunicipalLimits": ["MC", "GP", "TP", "DA", "MUN"],
+    "accessibility.adverseFactors": ["Yes", "No"],
+    "municipalDetails.sanctionPlanProvided": ["Produced", "Not produced"],
+    "municipalDetails.dateOfSanction": ["Produced", "Not produced"],
+    "municipalDetails.sanctionedArea": ["Produced", "Not produced"],
+    "municipalDetails.municipalCompliance": ["Produced", "Not produced"],
+    "technicalDetails.independentAccess": ["Independent Access", "Common Access"],
+};
+
+const findBestMatch = (value, options) => {
+    if (value === undefined || value === null || value === "") return null;
+    if (!Array.isArray(options) || options.length === 0) return value;
+
+    const cleanStr = (s) => String(s).toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    const cleanedVal = cleanStr(value);
+    if (!cleanedVal) return value;
+
+    // Direct match
+    for (const opt of options) {
+        if (cleanStr(opt) === cleanedVal) {
+            return opt;
+        }
+    }
+
+    // Custom aliases
+    if (cleanedVal === "gp" || cleanedVal === "panchayat" || cleanedVal.includes("panchayat")) {
+        for (const opt of options) {
+            const co = cleanStr(opt);
+            if (co.includes("grampanchayat") || co === "gp") return opt;
+        }
+    }
+    if (cleanedVal === "mc" || cleanedVal === "municipalcorporation") {
+        for (const opt of options) {
+            const co = cleanStr(opt);
+            if (co.includes("municipalcorporation") || co === "mc") return opt;
+        }
+    }
+    if (cleanedVal === "mun" || cleanedVal === "municipality") {
+        for (const opt of options) {
+            const co = cleanStr(opt);
+            if (co === "municipality" || co === "mun") return opt;
+        }
+    }
+
+    if (cleanedVal === "y" || cleanedVal === "yes") {
+        for (const opt of options) {
+            const co = cleanStr(opt);
+            if (co === "yes" || co === "yesn" || co === "yesno") return opt;
+        }
+    }
+    if (cleanedVal === "n" || cleanedVal === "no") {
+        for (const opt of options) {
+            const co = cleanStr(opt);
+            if (co === "no" || co === "yesn" || co === "yesno") return opt;
+        }
+    }
+    if (cleanedVal === "freehold") {
+        for (const opt of options) {
+            if (cleanStr(opt) === "freehold") return opt;
+        }
+    }
+    if (cleanedVal === "leasehold") {
+        for (const opt of options) {
+            if (cleanStr(opt) === "leasehold") return opt;
+        }
+    }
+
+    // Containment match
+    for (const opt of options) {
+        const co = cleanStr(opt);
+        if (co.includes(cleanedVal) || cleanedVal.includes(co)) {
+            return opt;
+        }
+    }
+
+    return value;
+};
+
 /**
  * Core adapter factory.
  *
@@ -151,7 +276,12 @@ export const createAutoFillAdapter = (mapping, onMapped) => {
         Object.entries(mapping).forEach(([targetField, rule]) => {
             const value = resolveRule(rule, extractedData);
             if (value !== null && value !== undefined) {
-                mapped[targetField] = value;
+                const options = DROPDOWN_OPTIONS[targetField];
+                if (options) {
+                    mapped[targetField] = findBestMatch(value, options);
+                } else {
+                    mapped[targetField] = value;
+                }
             }
         });
 

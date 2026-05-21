@@ -171,10 +171,33 @@ import toast from "react-hot-toast";
 
 const { Option } = Select;
 
-const ValuationDetails = ({ onNext }) => {
+const ValuationDetails = ({ extractedData, onNext }) => {
   const [form] = Form.useForm();
 
-  
+  React.useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const val = p.valuation_details || {};
+
+      form.setFieldsValue({
+        guidelineValue: val.guideline_rate || val.govt_rate || extractedData.guidelineValue,
+        distressValue: val.distress_value || extractedData.distressValue,
+        realizableValue: val.realizable_value || extractedData.realizableValue,
+        fairMarketValue: val.market_value || val.total_value || extractedData.fairMarketValue,
+        buildingValuation: val.building_value || extractedData.buildingValuation,
+        landValuation: val.land_value || extractedData.landValuation,
+        totalValuation: val.total_value || val.market_value || extractedData.totalValuation,
+        valuationApproach: p.valuation_approach || extractedData.valuationApproach,
+        remarks: p.remarks || extractedData.remarks,
+        valuerName: p.valuer_name || extractedData.valuerName,
+        valuerRegistrationNo: p.valuer_registration || extractedData.valuerRegistrationNo,
+        dateOfInspection: p.date_of_inspection || extractedData.dateOfInspection,
+        dateOfReport: p.date_of_report || extractedData.dateOfReport,
+        purposeOfValuation: p.purpose_of_valuation || extractedData.purposeOfValuation,
+      });
+    }
+  }, [extractedData, form]);
+
   const initialValues = {
     guidelineValue: 4500, // ₹ per sq.ft.
     distressValue: 6000000,

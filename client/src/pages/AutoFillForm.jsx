@@ -315,6 +315,8 @@ const buildAddressString = (addr = {}) => {
 
 const mapDocumentToFormData = (doc) => {
     if (!doc || typeof doc !== "object") return {};
+    
+    console.log("🔥 RAW AI EXTRACTED DATA ARRIVED AT FRONTEND:", doc);
 
     const data = {};
     const extractedProperty = doc.property || {};
@@ -351,8 +353,23 @@ const mapDocumentToFormData = (doc) => {
     // ── Address object ────────────────────────────────────────────────────────
     const addr = extractedProperty.address || {};
 
+    // Expose all individual address sub-keys for mappings
+    if (addr.plot_number) data.plotNumber = addr.plot_number;
+    if (addr.survey_number) data.surveyNumber = addr.survey_number;
+    if (addr.khasra_number) data.khasraNumber = addr.khasra_number;
+    if (addr.ward_number) data.wardNumber = addr.ward_number;
+    if (addr.colony_area) data.colonyArea = addr.colony_area;
+    if (addr.village_name) data.villageName = addr.village_name;
+    if (addr.patwari_halka_number) data.patwariHalkaNumber = addr.patwari_halka_number;
+    if (addr.tehsil) data.tehsil = addr.tehsil;
+    if (addr.district) data.district = addr.district;
+    if (addr.pincode) data.pincode = addr.pincode;
+    if (addr.state) data.state = addr.state;
+    if (addr.main_locality) data.mainLocality = addr.main_locality;
+    if (addr.sub_locality) data.subLocality = addr.sub_locality;
+
     // Build full formatted address for Legal and Site address fields
-    const formattedAddress = buildAddressString(addr);
+    const formattedAddress = addr.full_address || buildAddressString(addr);
 
     if (formattedAddress) {
         data.addressLegal = formattedAddress;
@@ -393,7 +410,6 @@ const mapDocumentToFormData = (doc) => {
     } else if (extractedProperty.dateOfReport) {
         data.dateOfReport = extractedProperty.dateOfReport;
     }
-
 
     if (doc?.LandArea || extractedProperty.LandArea) {
         data.LandArea = doc?.LandArea || extractedProperty.LandArea;
@@ -501,9 +517,81 @@ const mapDocumentToFormData = (doc) => {
     // ownershipType — sensible default
     data.ownershipType = "Freehold";
 
-    // numberAndDate
-    if (doc.registration_number && doc.registration_date) {
-        data.numberAndDate = `${doc.registration_number} / ${doc.registration_date}`;
+    // numberAndDate and specific document classifications
+    const docTypeRaw = String(doc.document_type || "").toUpperCase();
+    const regNum = doc.registration_number || "";
+    const regDate = doc.registration_date || "";
+
+    let detailsString = "";
+    if (regNum && regDate) {
+        detailsString = `${regNum} / ${regDate}`;
+    } else if (regNum) {
+        detailsString = regNum;
+    } else if (regDate) {
+        detailsString = regDate;
+    }
+
+    if (detailsString) {
+        data.numberAndDate = detailsString;
+    }
+
+    // Classify document details to fill specific fields in Aditya Birla Form
+    if (detailsString) {
+        if (
+            docTypeRaw.includes("SANCTION") ||
+            docTypeRaw.includes("PLAN") ||
+            docTypeRaw.includes("BLUEPRINT") ||
+            docTypeRaw.includes("MAP")
+        ) {
+            data.sanctionedPlanDetails = detailsString;
+        } else if (
+            docTypeRaw.includes("CC") ||
+            docTypeRaw.includes("OC") ||
+            docTypeRaw.includes("COMPLETION") ||
+            docTypeRaw.includes("OCCUPANCY")
+        ) {
+            data.ccOcDetails = detailsString;
+        } else if (
+            docTypeRaw.includes("AGREEMENT TO SELL") ||
+            docTypeRaw.includes("AGREEMENT TO SALE") ||
+            docTypeRaw.includes("ATS") ||
+            docTypeRaw.includes("BYANA") ||
+            docTypeRaw.includes("BAYANA")
+        ) {
+            data.agreementToSaleDetails = detailsString;
+        } else if (
+            docTypeRaw.includes("MUTATION") ||
+            docTypeRaw.includes("POSSESSION") ||
+            docTypeRaw.includes("NAMANTARAN") ||
+            docTypeRaw.includes("DAKHIL") ||
+            docTypeRaw.includes("B1") ||
+            docTypeRaw.includes("KHASRA") ||
+            docTypeRaw.includes("KHATAUNI")
+        ) {
+            data.mutationPossessionDetails = detailsString;
+        } else if (
+            docTypeRaw.includes("TAX") ||
+            docTypeRaw.includes("RECEIPT") ||
+            docTypeRaw.includes("LAGAAN")
+        ) {
+            data.taxReceiptDetails = detailsString;
+        } else if (
+            docTypeRaw.includes("ELECTRIC") ||
+            docTypeRaw.includes("BILL") ||
+            docTypeRaw.includes("BIJLI")
+        ) {
+            data.electricityBillDetails = detailsString;
+        } else if (
+            docTypeRaw.includes("CONVERSION") ||
+            docTypeRaw.includes("DIVERSION") ||
+            docTypeRaw.includes("NA ") ||
+            docTypeRaw.includes("N.A.")
+        ) {
+            data.conversionDetails = detailsString;
+        } else {
+            // Default/fallback: Sale Deed
+            data.saleDeedDetails = detailsString;
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -512,15 +600,21 @@ const mapDocumentToFormData = (doc) => {
     const bounds = extractedProperty.boundaries || {};
 
     ["north", "south", "east", "west"].forEach((dir) => {
-        const value = bounds[dir];
-        if (value) {
-            data[`${dir}Document`] = value;
-            data[`${dir}Actual`] = value;
-            data[`${dir}Plan`] = value;
+        const deedVal = bounds[`${dir}_as_per_deed`] || bounds[dir];
+        const actualVal = bounds[`${dir}_actual`] || bounds[dir];
+        if (deedVal) {
+            data[`${dir}Document`] = deedVal;
+            data[`${dir}Plan`] = deedVal;
+        }
+        if (actualVal) {
+            data[`${dir}Actual`] = actualVal;
         }
     });
 
-    if (bounds.north || bounds.south || bounds.east || bounds.west) {
+    if (
+        bounds.north || bounds.south || bounds.east || bounds.west ||
+        bounds.north_as_per_deed || bounds.north_actual
+    ) {
         data.boundariesMatching = "Yes";
     }
 
@@ -543,6 +637,11 @@ const mapDocumentToFormData = (doc) => {
         data.linearDimension = plotDimensions;
     }
 
+    // Dimension & Type fields
+    if (extractedProperty.dimension_width) data.dimensionWidth = extractedProperty.dimension_width;
+    if (extractedProperty.dimension_depth) data.dimensionDepth = extractedProperty.dimension_depth;
+    if (extractedProperty.property_sub_type) data.propertySubType = extractedProperty.property_sub_type;
+
     // ══════════════════════════════════════════════════════════════════════════
     // LATITUDE & LONGITUDE (new)
     // ══════════════════════════════════════════════════════════════════════════
@@ -552,6 +651,165 @@ const mapDocumentToFormData = (doc) => {
     if (extractedProperty.longitude) {
         data.longitude = extractedProperty.longitude;
     }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // NEW EXPANDED FIELDS (Valuation, Setbacks, Engineers, etc.)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // 1. Basic Details
+    const basic = extractedProperty.basic_details || {};
+    if (basic.valuer_name) data.valuerName = basic.valuer_name;
+    if (basic.client_name) {
+        data.clientName = basic.client_name;
+        if (!data.customerName) data.customerName = basic.client_name;
+    }
+    if (basic.vertical) data.vertical = basic.vertical;
+    if (basic.case_reference_number) {
+        data.caseReferenceNumber = basic.case_reference_number;
+        if (!data.refNo) data.refNo = basic.case_reference_number;
+    }
+    if (basic.initiation_date) data.initiationDate = basic.initiation_date;
+    if (basic.visit_date) {
+        data.visitDate = basic.visit_date;
+        if (!data.dateOfReport) data.dateOfReport = basic.visit_date;
+    }
+    if (basic.report_date) {
+        data.reportDate = basic.report_date;
+        data.dateOfReport = basic.report_date;
+    }
+
+    // 2. Setbacks
+    const setbacks = extractedProperty.setbacks || {};
+    if (setbacks.front_plan) data.frontAsPerPlan = setbacks.front_plan;
+    if (setbacks.front_actual) data.frontActual = setbacks.front_actual;
+    if (setbacks.rear_plan) data.rearAsPerPlan = setbacks.rear_plan;
+    if (setbacks.rear_actual) data.rearActual = setbacks.rear_actual;
+    if (setbacks.side1_plan) data.side1AsPerPlan = setbacks.side1_plan;
+    if (setbacks.side1_actual) data.side1Actual = setbacks.side1_actual;
+    if (setbacks.side2_plan) data.side2AsPerPlan = setbacks.side2_plan;
+    if (setbacks.side2_actual) data.side2Actual = setbacks.side2_actual;
+
+    // 3. Valuation Details
+    const val = extractedProperty.valuation_details || {};
+    if (val.plot_area_in_deed) data.plotAreaInDeed = val.plot_area_in_deed;
+    if (val.plot_area_physical) data.plotAreaPhysical = val.plot_area_physical;
+    if (val.built_up_area_norms) data.builtUpAreaNorms = val.built_up_area_norms;
+    if (val.built_up_area_tinshed) data.builtUpAreaTinShed = val.built_up_area_tinshed;
+    if (val.super_built_up_area) data.superBuiltUpArea = val.super_built_up_area;
+    if (val.carpet_area_plan) data.carpetAreaPlan = val.carpet_area_plan;
+    if (val.carpet_area_measurement) data.carpetAreaMeasurement = val.carpet_area_measurement;
+    if (val.total_value) data.totalValue = val.total_value;
+    if (val.distress_value) data.distressValue = val.distress_value;
+    if (val.insurance_value) data.insuranceValue = val.insurance_value;
+    if (val.government_value) data.governmentValue = val.government_value;
+    if (val.completion_percentage) data.completionPercentage = val.completion_percentage;
+    if (val.recommendation_percentage) data.recommendationPercentage = val.recommendation_percentage;
+
+    // Rates mapping
+    if (val.plot_area_physical_rate) data.plotAreaPhysicalRate = val.plot_area_physical_rate;
+    if (val.built_up_area_norms_rate) data.builtUpAreaNormsRate = val.built_up_area_norms_rate;
+    if (val.built_up_area_tinshed_rate) data.builtUpTinShedRate = val.built_up_area_tinshed_rate;
+    if (val.super_built_up_rate) data.superBuiltUpRate = val.super_built_up_rate;
+    if (val.carpet_area_plan_rate) data.carpetAreaPlanRate = val.carpet_area_plan_rate;
+    if (val.carpet_area_measurement_rate) data.carpetAreaMeasRate = val.carpet_area_measurement_rate;
+    if (val.car_park) data.carPark = val.car_park;
+    if (val.car_park_rate) data.carParkRate = val.car_park_rate;
+    if (val.amenities_val) data.amenitiesVal = val.amenities_val;
+    if (val.amenities_rate) data.amenitiesRate = val.amenities_rate;
+    if (val.land_rate) data.landRate = val.land_rate;
+    if (val.construction_rate) data.constructionRate = val.construction_rate;
+
+    // 4. Engineer Details
+    const eng = extractedProperty.engineer_details || {};
+    if (eng.visited_engineer) data.visitedEngineer = eng.visited_engineer;
+    if (eng.appraiser_name) data.appraiserName = eng.appraiser_name;
+    if (eng.prepared_by) data.preparedBy = eng.prepared_by;
+    if (eng.finalized_by) data.finalizedBy = eng.finalized_by;
+
+    // 5. Accommodation Details
+    const accom = extractedProperty.accommodation_details || {};
+    if (accom.total_floors) data.totalNoOfFloors = accom.total_floors;
+    if (accom.property_holding) {
+        data.propertyHolding = accom.property_holding;
+        data.ownershipType = accom.property_holding;
+    }
+    if (accom.type_of_structure) data.typeOfStructure = accom.type_of_structure;
+    if (accom.age_of_property) data.ageOfProperty = accom.age_of_property;
+    if (accom.residual_age) data.residualAge = accom.residual_age;
+    if (accom.project_category) data.projectCategory = accom.project_category;
+    if (accom.flat_type) data.flatType = accom.flat_type;
+    if (accom.flat_configuration) data.flatConfiguration = accom.flat_configuration;
+    if (accom.area_of_flat) data.areaOfFlat = accom.area_of_flat;
+    if (accom.lift_facility) data.liftFacility = accom.lift_facility;
+    if (accom.amenities) data.amenities = accom.amenities;
+    if (accom.marketability) data.marketability = accom.marketability;
+    if (accom.view_of_property) data.viewOfProperty = accom.view_of_property;
+    if (accom.parking_facility) data.parkingFacility = accom.parking_facility;
+    if (accom.quality_of_construction) data.qualityOfConstruction = accom.quality_of_construction;
+    if (accom.type_of_parking) data.typeOfParking = accom.type_of_parking;
+    if (accom.shape_of_property) data.shapeOfProperty = accom.shape_of_property;
+    if (accom.placement_of_property) data.placementOfProperty = accom.placement_of_property;
+    if (accom.exteriors_of_property) data.exteriorsOfProperty = accom.exteriors_of_property;
+    if (accom.interiors_of_property) data.interiorsOfProperty = accom.interiors_of_property;
+    if (accom.source_of_age) data.sourceOfAge = accom.source_of_age;
+    if (accom.maintenance_of_property) data.maintenanceOfProperty = accom.maintenance_of_property;
+    if (accom.cautious_location) data.cautiousLocation = accom.cautious_location;
+    if (accom.independent_access) data.independentAccess = accom.independent_access;
+
+    // 6. Location Details
+    const loc = extractedProperty.location_details || {};
+    if (loc.micro_location) data.microLocation = loc.micro_location;
+    if (loc.landmark) data.landmark = loc.landmark;
+    if (loc.valuator_done_before) data.valuatorDoneBefore = loc.valuator_done_before;
+    if (loc.if_yes_when) data.ifYesWhen = loc.if_yes_when;
+    if (loc.locality) data.locality = loc.locality;
+    if (loc.property_falling_within) data.propertyFallingWithin = loc.property_falling_within;
+    if (loc.occupancy_level) data.occupancyLevel = loc.occupancy_level;
+    if (loc.condition_of_site) data.conditionOfSite = loc.condition_of_site;
+    if (loc.distance_railway_station) data.distanceRailwayStation = loc.distance_railway_station;
+    if (loc.distance_bus_stop) data.distanceBusStop = loc.distance_bus_stop;
+    if (loc.distance_plot_main_road) data.distancePlotMainRoad = loc.distance_plot_main_road;
+    if (loc.distance_city_centre) data.distanceCityCentre = loc.distance_city_centre;
+    if (loc.distance_abcl_branch) data.distanceABCLBranch = loc.distance_abcl_branch;
+    if (loc.width_approach_road) data.widthApproachRoad = loc.width_approach_road;
+    if (loc.physical_approach) data.physicalApproach = loc.physical_approach;
+    if (loc.legal_approach) data.legalApproach = loc.legal_approach;
+    if (loc.other_features) data.otherFeatures = loc.other_features;
+    if (loc.connectivity) data.connectivity = loc.connectivity;
+    if (loc.site_access) data.siteAccess = loc.site_access;
+    if (loc.proximity_to_amenities) data.proximityToAmenities = loc.proximity_to_amenities;
+    if (loc.comments_on_property) data.commentsOnProperty = loc.comments_on_property;
+    if (loc.adverse_factors) data.adverseFactors = loc.adverse_factors;
+
+    // 7. Property Details
+    const propDet = extractedProperty.property_details || {};
+    if (propDet.occupancy) data.occupancy = propDet.occupancy;
+    if (propDet.occupied_by) data.occupiedBy = propDet.occupied_by;
+    if (propDet.occupied_since) data.occupiedSince = propDet.occupied_since;
+    if (propDet.name_of_occupant) data.nameOfOccupant = propDet.name_of_occupant;
+    if (propDet.property_demarcated) data.propertyDemarcated = propDet.property_demarcated;
+    if (propDet.property_identification) data.propertyIdentification = propDet.property_identification;
+    if (propDet.identification_through) data.identificationThrough = propDet.identification_through;
+
+    // 8. Municipal Details
+    const muni = extractedProperty.municipal_details || {};
+    if (muni.sanction_plan_provided) data.sanctionPlanProvided = muni.sanction_plan_provided;
+    if (muni.date_of_sanction) data.dateOfSanction = muni.date_of_sanction;
+    if (muni.sanctioned_area) data.sanctionedArea = muni.sanctioned_area;
+    if (muni.municipal_compliance) data.municipalCompliance = muni.municipal_compliance;
+
+    // 9. Built Up Area Details
+    const bua = extractedProperty.built_up_area || {};
+    if (bua.ground_floor_area) data.groundFloorAsPerSite = bua.ground_floor_area;
+    if (bua.first_floor_area) data.firstFloorAsPerSite = bua.first_floor_area;
+    if (bua.total_area) data.totalBuiltUp = bua.total_area;
+    if (bua.ground_floor_deviation) data.groundFloorDeviation = bua.ground_floor_deviation;
+    if (bua.first_floor_deviation) data.firstFloorDeviation = bua.first_floor_deviation;
+    if (bua.total_deviation) data.totalDeviation = bua.total_deviation;
+    if (bua.ground_floor_deviation_remarks) data.groundFloorDevRmk = bua.ground_floor_deviation_remarks;
+    if (bua.first_floor_deviation_remarks) data.firstFloorDevRmk = bua.first_floor_deviation_remarks;
+    if (bua.ground_floor_remarks) data.groundFloorRmk = bua.ground_floor_remarks;
+    if (bua.first_floor_remarks) data.firstFloorRmk = bua.first_floor_remarks;
 
     return data;
 };

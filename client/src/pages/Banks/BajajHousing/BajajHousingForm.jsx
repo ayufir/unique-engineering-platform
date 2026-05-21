@@ -10,6 +10,7 @@ import {
 } from "../../../redux/features/Banks/BajajHousing/BajajHousingThunk";
 import { finalUpdate } from "../../../redux/features/case/caseThunks";
 import axiosInstance from "../../../config/axios";
+import AutoFillForm from "../../AutoFillForm";
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 const getCoordinateSnapshot = (lat, lng) =>
@@ -300,9 +301,147 @@ export default function BajajHousingForm() {
     const [liveLocation, setLiveLocation] = useState({ lat: "--", lng: "--" });
     const [saving, setSaving] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
+    const [extractedData, setExtractedData] = useState({});
+
     const isEdit = Boolean(id);
     const canFinalSubmit =
         isEdit && (user?.role === "Admin" || user?.role === "SuperAdmin");
+
+    useEffect(() => {
+        if (Object.keys(extractedData).length > 0) {
+            console.log("🔥 BajajHousingForm RECEIVED extractedData:", extractedData);
+
+            const p = extractedData.property || {};
+            const loc = p.location_details || {};
+            const propDet = p.property_details || {};
+            const muni = p.municipal_details || {};
+            const val = p.valuation_details || {};
+            const eng = p.engineer_details || {};
+            const accom = p.accommodation_details || {};
+            const bounds = p.boundaries || {};
+            const addr = p.address || {};
+            const bankDet = p.bank_specific_details || {};
+            const struct = p.structural_engineering || {};
+            const infra = p.infrastructure_details || {};
+            const legal = p.legal_and_compliance || {};
+            
+            console.log("🔥 EXTRACTED NESTED PROPERTY:", p);
+
+            setForm((prev) => ({
+                ...prev,
+                applicantDetails: {
+                    ...prev.applicantDetails,
+                    fileNo: bankDet.file_no || extractedData.caseReferenceNumber || extractedData.refNo || extractedData.registration_number || prev.applicantDetails.fileNo,
+                    lanNo: bankDet.lan_no || extractedData.customerNo || prev.applicantDetails.lanNo,
+                    branch: bankDet.branch || prev.applicantDetails.branch,
+                    brqNo: bankDet.brq_no || prev.applicantDetails.brqNo,
+                    loanCategory: bankDet.loan_category || prev.applicantDetails.loanCategory,
+                    applicantName: p.applicant_name || p.owner_name || extractedData.borrowerName || extractedData.applicantName || prev.applicantDetails.applicantName,
+                    valuerName: eng.visited_engineer || eng.appraiser_name || extractedData.valuerName || prev.applicantDetails.valuerName,
+                    contactPerson: p.contact_person || extractedData.contactPerson || prev.applicantDetails.contactPerson,
+                    contactNo: p.contact_number || p["Mobile No."] || extractedData.contactNumber || prev.applicantDetails.contactNo,
+                    personMetAtSite: p.duringPropertyVisit || extractedData.personMetDuringVisit || prev.applicantDetails.personMetAtSite,
+                    propertyOwner: p.owner_name || extractedData.propertyOwnerName || prev.applicantDetails.propertyOwner,
+                    dateOfReport: p.dateOfReport || extractedData.dateOfReport || extractedData.reportDate || prev.applicantDetails.dateOfReport,
+                },
+                locationDetails: {
+                    ...prev.locationDetails,
+                    propertyPincode: addr.pincode || extractedData.pincode || prev.locationDetails.propertyPincode,
+                    propertyCity: addr.district || addr.tehsil || extractedData.city || prev.locationDetails.propertyCity,
+                    propertyState: addr.state || extractedData.state || prev.locationDetails.propertyState,
+                    addressAsPerSite: addr.full_address || extractedData.propertyAddress || prev.locationDetails.addressAsPerSite,
+                    localityName: loc.locality || addr.main_locality || addr.sub_locality || extractedData.locality || prev.locationDetails.localityName,
+                    landmarkNearBy: loc.landmark || extractedData.landmark || prev.locationDetails.landmarkNearBy,
+                    distanceFromCityCenter: loc.distance_city_centre || extractedData.distanceCityCentre || prev.locationDetails.distanceFromCityCenter,
+                    floorNo: accom.flat_configuration || accom.flat_type || extractedData.unitNo || prev.locationDetails.floorNo,
+                    latitude: p.latitude || extractedData.latitude || prev.locationDetails.latitude,
+                    longitude: p.longitude || extractedData.longitude || prev.locationDetails.longitude,
+                    jurisdiction: legal.jurisdiction || prev.locationDetails.jurisdiction,
+                    propertyHoldingType: accom.property_holding || extractedData.propertyHolding || prev.locationDetails.propertyHoldingType,
+                    marketability: accom.marketability || extractedData.marketability || prev.locationDetails.marketability,
+                    propertyOccupiedBy: propDet.occupied_by || propDet.occupancy || extractedData.occupiedBy || prev.locationDetails.propertyOccupiedBy,
+                    typeOfProperty: p.property_sub_type || accom.type_of_structure || p.property_type || extractedData.typeOfStructure || prev.locationDetails.typeOfProperty,
+                },
+                boundaryDetails: {
+                    ...prev.boundaryDetails,
+                    northBoundarySite: bounds.north_actual || extractedData.northActual || prev.boundaryDetails.northBoundarySite,
+                    southBoundarySite: bounds.south_actual || extractedData.southActual || prev.boundaryDetails.southBoundarySite,
+                    eastBoundarySite: bounds.east_actual || extractedData.eastActual || prev.boundaryDetails.eastBoundarySite,
+                    westBoundarySite: bounds.west_actual || extractedData.westActual || prev.boundaryDetails.westBoundarySite,
+                    northBoundary: bounds.north_as_per_deed || extractedData.northDocument || prev.boundaryDetails.northBoundary,
+                    southBoundary: bounds.south_as_per_deed || extractedData.southDocument || prev.boundaryDetails.southBoundary,
+                    eastBoundary: bounds.east_as_per_deed || extractedData.eastDocument || prev.boundaryDetails.eastBoundary,
+                    westBoundary: bounds.west_as_per_deed || extractedData.westDocument || prev.boundaryDetails.westBoundary,
+                    boundariesMatching: extractedData.boundariesMatching || prev.boundaryDetails.boundariesMatching,
+                    approachRoadSize: loc.width_approach_road || extractedData.widthApproachRoad || prev.boundaryDetails.approachRoadSize,
+                    propertyIdentified: propDet.property_identification || propDet.property_demarcated || extractedData.propertyIdentification || prev.boundaryDetails.propertyIdentified,
+                },
+                ndmaParameters: {
+                    ...prev.ndmaParameters,
+                    natureOfBuilding: accom.type_of_structure || extractedData.typeOfStructure || prev.ndmaParameters.natureOfBuilding,
+                    structureType: accom.type_of_structure || extractedData.structureType || prev.ndmaParameters.structureType,
+                    roofType: struct.roof_type || extractedData.roofType || prev.ndmaParameters.roofType,
+                    steelGrade: struct.steel_grade || prev.ndmaParameters.steelGrade,
+                    concreteGrade: struct.concrete_grade || prev.ndmaParameters.concreteGrade,
+                    typeOfMasonry: struct.type_of_masonry || prev.ndmaParameters.typeOfMasonry,
+                    footingType: struct.footing_type || prev.ndmaParameters.footingType,
+                    seismicZone: struct.seismic_zone || prev.ndmaParameters.seismicZone,
+                    floodProneArea: struct.flood_prone_area || prev.ndmaParameters.floodProneArea,
+                    fireExit: struct.fire_exit || prev.ndmaParameters.fireExit,
+                    sanctionedPlanProvided: muni.sanction_plan_provided || extractedData.sanctionPlanProvided || prev.ndmaParameters.sanctionedPlanProvided,
+                    approvingAuthority: legal.approving_authority || prev.ndmaParameters.approvingAuthority,
+                },
+                technicalDetails: {
+                    ...prev.technicalDetails,
+                    constructionQuality: accom.quality_of_construction || extractedData.qualityOfConstruction || prev.technicalDetails.constructionQuality,
+                    liftAvailable: accom.lift_facility || extractedData.liftFacility || prev.technicalDetails.liftAvailable,
+                    noOfLifts: struct.no_of_lifts || prev.technicalDetails.noOfLifts,
+                    eastToWestPlan: p.dimension_width || extractedData.side1AsPerPlan || prev.technicalDetails.eastToWestPlan,
+                    eastToWestDoc: p.dimension_width || extractedData.side1AsPerPlan || prev.technicalDetails.eastToWestDoc,
+                    eastToWestSite: p.dimension_width || extractedData.side1Actual || prev.technicalDetails.eastToWestSite,
+                    northToSouthPlan: p.dimension_depth || extractedData.side2AsPerPlan || prev.technicalDetails.northToSouthPlan,
+                    northToSouthDoc: p.dimension_depth || extractedData.side2AsPerPlan || prev.technicalDetails.northToSouthDoc,
+                    northToSouthSite: p.dimension_depth || extractedData.side2Actual || prev.technicalDetails.northToSouthSite,
+                    landAreaPlan: val.plot_area_in_deed || p.plot_area || prev.technicalDetails.landAreaPlan,
+                    landAreaDoc: val.plot_area_in_deed || p.plot_area || prev.technicalDetails.landAreaDoc,
+                    landAreaSite: val.plot_area_physical || p.plot_area || prev.technicalDetails.landAreaSite,
+                    carpetAreaAsPerDocument: val.carpet_area_plan || val.carpet_area_measurement || prev.technicalDetails.carpetAreaAsPerDocument,
+                    actualConstructionSBUA: val.super_built_up_area || prev.technicalDetails.actualConstructionSBUA,
+                    statusOfProperty: loc.condition_of_site || loc.occupancy_level || prev.technicalDetails.statusOfProperty,
+                    percentCompleted: val.completion_percentage || prev.technicalDetails.percentCompleted,
+                    currentAgeOfProperty: accom.age_of_property || prev.technicalDetails.currentAgeOfProperty,
+                    residualAge: accom.residual_age || prev.technicalDetails.residualAge,
+                    riskOfDemolition: legal.risk_of_demolition || prev.technicalDetails.riskOfDemolition,
+                },
+                valuationDetails: {
+                    ...prev.valuationDetails,
+                    landArea: val.plot_area_physical || val.plot_area_in_deed || p.plot_area || prev.valuationDetails.landArea,
+                    tentativeLandRate: val.land_rate || val.plot_area_physical_rate || prev.valuationDetails.tentativeLandRate,
+                    landValue: val.total_value || prev.valuationDetails.landValue,
+                    governmentValue: val.government_value || prev.valuationDetails.governmentValue,
+                    distressedValue: val.distress_value || prev.valuationDetails.distressedValue,
+                    valuationMethodology: extractedData.valuationMethodology || prev.valuationDetails.valuationMethodology,
+                    valuationDoneEarlier: loc.valuator_done_before || prev.valuationDetails.valuationDoneEarlier,
+                    remarks: p.report_remarks || loc.comments_on_property || prev.valuationDetails.remarks,
+                    isPropertyInNegativeArea: legal.is_property_in_negative_area || prev.valuationDetails.isPropertyInNegativeArea,
+                },
+                infrastructureDetails: {
+                    ...prev.infrastructureDetails,
+                    approachRoadToProperty: loc.physical_approach || loc.width_approach_road || prev.infrastructureDetails.approachRoadToProperty,
+                    developmentOfSurroundingAreas: loc.micro_location || prev.infrastructureDetails.developmentOfSurroundingAreas,
+                    distanceFromCityCenter: loc.distance_city_centre || prev.infrastructureDetails.distanceFromCityCenter,
+                    anyDemolitionThreat: infra.any_demolition_threat || loc.adverse_factors || extractedData.riskOfDemolition || prev.infrastructureDetails.anyDemolitionThreat,
+                    waterSupply: infra.water_supply || prev.infrastructureDetails.waterSupply,
+                    waterDistributor: infra.water_distributor || prev.infrastructureDetails.waterDistributor,
+                    electricityAvailable: infra.electricity_available || prev.infrastructureDetails.electricityAvailable,
+                    electricityDistributor: infra.electricity_distributor || prev.infrastructureDetails.electricityDistributor,
+                    sewerLineConnected: infra.sewer_line_connected || prev.infrastructureDetails.sewerLineConnected,
+                    createdBy: eng.prepared_by || prev.infrastructureDetails.createdBy,
+                    approvedBy: eng.finalized_by || prev.infrastructureDetails.approvedBy,
+                }
+            }));
+        }
+    }, [extractedData]);
 
     useEffect(() => {
         if (id || !navigator.geolocation) return;
@@ -490,11 +629,21 @@ export default function BajajHousingForm() {
             if (id) {
                 await dispatch(updateBajajHousingDetails({ id, ...payload })).unwrap();
                 toast.success("Updated ✅");
+                
+                if (window.confirm("Form updated successfully! Do you want to Save as PDF now?")) {
+                    window.open(`/bank/bajaj-housing/view/${id}`, '_blank');
+                }
+
                 if (user?.role === "FieldOfficer") navigate("/field/dashboard");
                 else navigate(`/bank/bajaj-housing/view/${id}`);
             } else {
                 const res = await dispatch(createBajajHousing(payload)).unwrap();
                 toast.success("Created ✅");
+                
+                if (window.confirm("Form created successfully! Do you want to Save as PDF now?")) {
+                    window.open(`/bank/bajaj-housing/view/${res._id}`, '_blank');
+                }
+
                 navigate(`/bank/bajaj-housing/view/${res._id}`);
             }
         } catch (err) {
@@ -530,6 +679,11 @@ export default function BajajHousingForm() {
             ).unwrap();
 
             toast.success("Final submitted ✅");
+            
+            if (window.confirm("Final submit successful! Do you want to Save as PDF now?")) {
+                window.open(`/bank/bajaj-housing/view/${id}`, '_blank');
+            }
+
             navigate("/");
         } catch (err) {
             console.error(err);
@@ -583,6 +737,10 @@ export default function BajajHousingForm() {
                         <span style={s.stepText}>{STEP_NAMES[num]}</span>
                     </div>
                 ))}
+            </div>
+
+            <div style={{ margin: "20px 24px 0 24px" }}>
+                <AutoFillForm setFormData={setExtractedData} />
             </div>
 
             <div style={s.main}>
@@ -906,6 +1064,17 @@ export default function BajajHousingForm() {
                             <button style={s.btnSubmit} onClick={handleSubmit} disabled={saving}>
                                 {saving ? "Saving..." : isEdit ? "Update" : "Submit"}
                             </button>
+                            {isEdit && (
+                                <button 
+                                    style={s.btnView} 
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        window.open(`/bank/bajaj-housing/view/${id}`, '_blank');
+                                    }}
+                                >
+                                    📄 Save as PDF
+                                </button>
+                            )}
                             {canFinalSubmit && (
                                 <button style={s.btnFinal} onClick={handleFinalSubmit} disabled={saving}>
                                     {saving ? "Finalizing..." : "Final Submit"}

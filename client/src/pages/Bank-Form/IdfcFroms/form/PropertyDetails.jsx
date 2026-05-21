@@ -437,6 +437,33 @@ const PropertyDetails = ({ onDataChange }) => {
     permissibleUsage: "",
   });
 
+  useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const propDet = p.property_details || {};
+      const accom = p.accommodation_details || {};
+      const val = p.valuation_details || {};
+      const muni = p.municipal_details || {};
+
+      setFormData((prev) => ({
+        ...prev,
+        occupantStatus: propDet.occupancy || extractedData.occupantStatus || prev.occupantStatus,
+        occupantName: propDet.occupied_by || extractedData.occupantName || prev.occupantName,
+        propertyDemarcation: propDet.property_demarcated || propDet.property_identification || extractedData.propertyDemarcation || prev.propertyDemarcation,
+        structureType: accom.type_of_structure || p.property_sub_type || extractedData.structureType || prev.structureType,
+        floorNumber: accom.flat_configuration || accom.flat_type || extractedData.floorNumber || prev.floorNumber,
+        carpetArea: val.carpet_area_measurement || val.carpet_area_plan || extractedData.carpetArea || prev.carpetArea,
+        superBuiltUp: val.super_built_up_area || extractedData.superBuiltUp || prev.superBuiltUp,
+        constructionQuality: accom.quality_of_construction || extractedData.constructionQuality || prev.constructionQuality,
+        propertyAge: accom.age_of_property || extractedData.propertyAge || prev.propertyAge,
+        residualLife: accom.residual_age || extractedData.residualLife || prev.residualLife,
+        planApprovalNo: muni.sanction_plan_provided || extractedData.planApprovalNo || prev.planApprovalNo,
+        ownershipType: accom.property_holding || extractedData.ownershipType || prev.ownershipType,
+        permissibleUsage: muni.municipal_usage || extractedData.permissibleUsage || prev.permissibleUsage,
+      }));
+    }
+  }, [extractedData]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));

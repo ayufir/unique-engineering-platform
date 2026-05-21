@@ -10,11 +10,13 @@ import {
 } from "../../../redux/features/Banks/manappuram/ManappuramThunks";
 import toast from "react-hot-toast";
 import { finalUpdate } from "../../../redux/features/case/caseThunks";
+import AutoFillForm from "../../AutoFillForm";
 
 const Manapuram = () => {
   const [ManipuramData, setManipuramData] = useState({});
   const [ManipuramTwo, setManipuramTwo] = useState({});
   const [isEdit, setIsEdit] = useState({});
+  const [extractedData, setExtractedData] = useState({});
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -95,8 +97,10 @@ const Manapuram = () => {
     <div className='max-w-5xl mx-auto mt-6 px-4'>
       <h3 className='text-2xl font-semibold mb-4'>Complete Valuation Report</h3>
 
-      <ManapuramFormOne isEdit={isEdit} onDataChange={setManipuramData} />
-      <ManapuramFormTwo isEdit={isEdit} onDataChange={setManipuramTwo} />
+      <AutoFillForm setFormData={setExtractedData} />
+
+      <ManapuramFormOne isEdit={isEdit} extractedData={extractedData} onDataChange={setManipuramData} />
+      <ManapuramFormTwo isEdit={isEdit} extractedData={extractedData} onDataChange={setManipuramTwo} />
       {loading && <p className='text-blue-600'>Submitting...</p>}
       {error && <p className='text-red-600'>Error: {error}</p>}
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const SurroundingDetails = ({ onNext }) => {
+const SurroundingDetails = ({ extractedData, onNext }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     type: "Residential",
@@ -16,6 +16,30 @@ const SurroundingDetails = ({ onNext }) => {
     legalApproach: "CLEAR",
     otherFeatures: "No",
   });
+
+  React.useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const loc = p.location_details || {};
+      const accom = p.accommodation_details || {};
+
+      setFormData((prev) => ({
+        ...prev,
+        type: p.property_type || extractedData.type || prev.type,
+        locality: loc.type_of_locality || extractedData.locality || prev.locality,
+        siteDevelopment: loc.site_development || extractedData.siteDevelopment || prev.siteDevelopment,
+        proximityToAmenities: loc.proximity_to_civic_amenities || extractedData.proximityToAmenities || prev.proximityToAmenities,
+        railwayStation: loc.railway_station || extractedData.railwayStation || prev.railwayStation,
+        busStop: loc.bus_stop || extractedData.busStop || prev.busStop,
+        closeVicinity: loc.landmark || extractedData.closeVicinity || prev.closeVicinity,
+        distanceFromCityCenter: loc.distance_from_city_center || extractedData.distanceFromCityCenter || prev.distanceFromCityCenter,
+        roadCondition: loc.condition_of_approach_road || extractedData.roadCondition || prev.roadCondition,
+        physicalApproach: loc.physical_approach || extractedData.physicalApproach || prev.physicalApproach,
+        legalApproach: loc.legal_approach || extractedData.legalApproach || prev.legalApproach,
+        otherFeatures: p.encumbrance || extractedData.otherFeatures || prev.otherFeatures,
+      }));
+    }
+  }, [extractedData]);
 
   const handleChange = (e) => {
 

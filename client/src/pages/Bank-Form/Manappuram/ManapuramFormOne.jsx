@@ -37,46 +37,85 @@ const ManapuramFormOne = ({ isEdit, onDataChange }) => {
     commentsOnProperty: "",
   });
 
-  // Initialize formData when editing
+  // Initialize formData when editing or extracting
   useEffect(() => {
-    if (isEdit) {
-      setFormData({
-        valuerName: isEdit.valuerName || "",
-        caseRefNo: isEdit.caseRefNo || "",
-        dateOfVisit: isEdit?.dateOfVisit
-          ? moment(isEdit.dateOfVisit).format("YYYY-MM-DD")
-          : "",
-        dateOfReport: isEdit?.dateOfReport
-          ? moment(isEdit.dateOfReport).format("YYYY-MM-DD")
-          : "",
-        contactPersonName: isEdit.contactPersonName || "",
-        contactPersonMobile: isEdit.contactPersonMobile || "",
-        applicantsName: isEdit.applicantsName || "",
-        owner: isEdit.owner || "",
-        documentProduced: isEdit.documentProduced || "",
-        propertyType: isEdit.propertyType || "",
-        holdingType: isEdit.holdingType || "",
-        propertyUsage: isEdit.propertyUsage || "",
-        usageAuthorized: isEdit.usageAuthorized || "",
-        usageRestriction: isEdit.usageRestriction || "",
-        occupancyStatus: isEdit.occupancyStatus || "",
-        measurement: isEdit.measurement || "",
-        distanceFromBranch: isEdit.distanceFromBranch || "",
-        addressAsPerDocument: isEdit.addressAsPerDocument || "",
-        landMark: isEdit.landMark || "",
-        eastBoundary: isEdit.eastBoundary || "",
-        westBoundary: isEdit.westBoundary || "",
-        northBoundary: isEdit.northBoundary || "",
-        southBoundary: isEdit.southBoundary || "",
-        connectivity: isEdit.connectivity || "",
-        siteAccess: isEdit.siteAccess || "",
-        proximityToAmenities: isEdit.proximityToAmenities || "",
-        distanceFromCityCentre: isEdit.distanceFromCityCentre || "",
-        roadTypeWidth: isEdit.roadTypeWidth || "",
-        commentsOnProperty: isEdit.commentsOnProperty || "",
-      });
-    }
-  }, [isEdit]);
+    setFormData((prev) => {
+      let newData = { ...prev };
+
+      if (isEdit) {
+        newData = {
+          ...newData,
+          valuerName: isEdit.valuerName || "",
+          caseRefNo: isEdit.caseRefNo || "",
+          dateOfVisit: isEdit?.dateOfVisit
+            ? moment(isEdit.dateOfVisit).format("YYYY-MM-DD")
+            : "",
+          dateOfReport: isEdit?.dateOfReport
+            ? moment(isEdit.dateOfReport).format("YYYY-MM-DD")
+            : "",
+          contactPersonName: isEdit.contactPersonName || "",
+          contactPersonMobile: isEdit.contactPersonMobile || "",
+          applicantsName: isEdit.applicantsName || "",
+          owner: isEdit.owner || "",
+          documentProduced: isEdit.documentProduced || "",
+          propertyType: isEdit.propertyType || "",
+          holdingType: isEdit.holdingType || "",
+          propertyUsage: isEdit.propertyUsage || "",
+          usageAuthorized: isEdit.usageAuthorized || "",
+          usageRestriction: isEdit.usageRestriction || "",
+          occupancyStatus: isEdit.occupancyStatus || "",
+          measurement: isEdit.measurement || "",
+          distanceFromBranch: isEdit.distanceFromBranch || "",
+          addressAsPerDocument: isEdit.addressAsPerDocument || "",
+          landMark: isEdit.landMark || "",
+          eastBoundary: isEdit.eastBoundary || "",
+          westBoundary: isEdit.westBoundary || "",
+          northBoundary: isEdit.northBoundary || "",
+          southBoundary: isEdit.southBoundary || "",
+          connectivity: isEdit.connectivity || "",
+          siteAccess: isEdit.siteAccess || "",
+          proximityToAmenities: isEdit.proximityToAmenities || "",
+          distanceFromCityCentre: isEdit.distanceFromCityCentre || "",
+          roadTypeWidth: isEdit.roadTypeWidth || "",
+          commentsOnProperty: isEdit.commentsOnProperty || "",
+        };
+      }
+
+      if (extractedData && Object.keys(extractedData).length > 0) {
+        const p = extractedData.property || {};
+        const bankDet = p.bank_specific_details || {};
+        const addr = p.address || {};
+        const loc = p.location_details || {};
+        const accom = p.accommodation_details || {};
+        const propDet = p.property_details || {};
+        const bounds = p.boundaries || {};
+        const val = p.valuation_details || {};
+
+        newData = {
+          ...newData,
+          caseRefNo: bankDet.file_no || bankDet.lan_no || extractedData.caseReferenceNumber || newData.caseRefNo,
+          contactPersonName: p.contact_person || extractedData.contactPersonName || newData.contactPersonName,
+          contactPersonMobile: p.contact_number || p["Mobile No."] || extractedData.contactPersonNumber || newData.contactPersonMobile,
+          applicantsName: p.applicant_name || p.owner_name || extractedData.applicantNames || newData.applicantsName,
+          owner: p.owner_name || newData.owner,
+          propertyType: p.property_type || accom.type_of_structure || extractedData.propertyType || newData.propertyType,
+          holdingType: accom.property_holding || newData.holdingType,
+          propertyUsage: p.property_use || newData.propertyUsage,
+          occupancyStatus: propDet.occupancy || newData.occupancyStatus,
+          addressAsPerDocument: addr.full_address || newData.addressAsPerDocument,
+          landMark: loc.landmark || newData.landMark,
+          eastBoundary: bounds.east_actual || bounds.east_as_per_deed || newData.eastBoundary,
+          westBoundary: bounds.west_actual || bounds.west_as_per_deed || newData.westBoundary,
+          northBoundary: bounds.north_actual || bounds.north_as_per_deed || newData.northBoundary,
+          southBoundary: bounds.south_actual || bounds.south_as_per_deed || newData.southBoundary,
+          distanceFromCityCentre: loc.distance_city_centre || newData.distanceFromCityCentre,
+          roadTypeWidth: loc.width_approach_road || newData.roadTypeWidth,
+        };
+      }
+
+      return newData;
+    });
+  }, [isEdit, extractedData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

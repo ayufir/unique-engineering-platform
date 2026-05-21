@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
-const PlanApproval = ({ onNext }) => {
+const PlanApproval = ({ extractedData, onNext }) => {
   const [isOpen, setIsOpen] = useState(false);
- const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     constructionAsPerApproved: "Yes",
     approvedPlanDetails: "NOT OBTAIN",
     constructionPermission: "NOT OBTAIN",
@@ -23,6 +23,31 @@ const PlanApproval = ({ onNext }) => {
     rate: "300",
     landValue: "0"
   });
+
+  React.useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const propDet = p.property_details || {};
+      const val = p.valuation_details || {};
+
+      setFormData((prev) => ({
+        ...prev,
+        constructionAsPerApproved: propDet.construction_as_per_plan || extractedData.constructionAsPerApproved || prev.constructionAsPerApproved,
+        approvedPlanDetails: p.approved_plan_details || extractedData.approvedPlanDetails || prev.approvedPlanDetails,
+        constructionPermission: p.construction_permission || extractedData.constructionPermission || prev.constructionPermission,
+        violationsObserved: p.violations_observed || extractedData.violationsObserved || prev.violationsObserved,
+        structureConfirmingLocal: p.structure_confirming_local || extractedData.structureConfirmingLocal || prev.structureConfirmingLocal,
+        floor: propDet.no_of_floors_actual || extractedData.floor || prev.floor,
+        asPerApprovalPlan: propDet.no_of_floors_permissible || extractedData.asPerApprovalPlan || prev.asPerApprovalPlan,
+        fairMarketValueFloor: val.building_value || extractedData.fairMarketValueFloor || prev.fairMarketValueFloor,
+        fairMarketValueActual: val.market_value || extractedData.fairMarketValueActual || prev.fairMarketValueActual,
+        finalAreaForValuation: val.plot_area_physical || extractedData.finalAreaForValuation || prev.finalAreaForValuation,
+        landArea: val.plot_area_physical || extractedData.landArea || prev.landArea,
+        rate: val.land_rate || val.guideline_rate || extractedData.rate || prev.rate,
+        landValue: val.land_value || extractedData.landValue || prev.landValue,
+      }));
+    }
+  }, [extractedData]);
 
   const handleChange = (e) => {
 

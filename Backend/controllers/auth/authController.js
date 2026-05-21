@@ -13,7 +13,8 @@ exports.register = async (req, res, next) => {
       const restrictedRoles = ["SuperAdmin", "Admin"];
       if (restrictedRoles.includes(role)) {
         return res.status(403).json({
-          message: "Admin can only create Coordinator, FieldOfficer, Accountant, etc.",
+          message:
+            "Admin can only create Coordinator, FieldOfficer, Accountant, etc.",
         });
       }
     }
@@ -28,7 +29,8 @@ exports.register = async (req, res, next) => {
       email,
       password: hashedPassword,
       role,
-      assignedCity: req.user.role === "Admin" ? req.user.assignedCity : assignedCity,
+      assignedCity:
+        req.user.role === "Admin" ? req.user.assignedCity : assignedCity,
     });
     res.status(201).json({ user, token: generateToken(user._id, user.role) });
   } catch (error) {
@@ -43,6 +45,7 @@ exports.login = async (req, res, next) => {
     console.log(password);
 
     let user = await User.findOne({ email });
+    console.log(user);
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -150,9 +153,9 @@ exports.getAllUsers = async (req, res, next) => {
     let query = {};
     if (req.user.role === "Admin") {
       // Admins see users in their city (excluding SuperAdmins for security)
-      query = { 
+      query = {
         assignedCity: req.user.assignedCity,
-        role: { $ne: "SuperAdmin" }
+        role: { $ne: "SuperAdmin" },
       };
     } else if (req.user.role === "SuperAdmin") {
       // SuperAdmin sees everyone

@@ -84,6 +84,7 @@ import PropertyAndUnits from "./PropertyAndUnitDetailsForm";
 import NdmaAndValuation from "./NdmaAndValuation";
 import Floorwise from "./FloorwiseBuildingUsageDetails";
 import UploadAndSiteVisitForm from "./UploadAndSiteVisitForm";
+import AutoFillForm from "../../AutoFillForm";
 
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -93,6 +94,7 @@ const ICICIBankForm = () => {
   const TOTAL_STEPS = 6;
   const [step, setStep] = useState(1);
   const [collectedData, setCollectedData] = useState({});
+  const [extractedData, setExtractedData] = useState({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -141,12 +143,19 @@ const ICICIBankForm = () => {
         Step {step <= TOTAL_STEPS ? step : TOTAL_STEPS} of {TOTAL_STEPS}
       </p>
 
-      {step === 1 && <Request onNext={handleNext} />}
-      {step === 2 && <UploadAndSiteVisitForm onNext={handleNext} />}
-      {step === 3 && <DocumentForm onNext={handleNext} />}
-      {step === 4 && <PropertyAndUnits onNext={handleNext} />}
-      {step === 5 && <NdmaAndValuation onNext={handleNext} />}
-      {step === 6 && <Floorwise onNext={handleNext} />}
+      {step === 1 && (
+        <>
+          <Request onNext={handleNext} extractedData={extractedData} />
+          <div className="mt-4 border border-blue-200 rounded-lg p-4 bg-blue-50">
+            <AutoFillForm setFormData={setExtractedData} />
+          </div>
+        </>
+      )}
+      {step === 2 && <UploadAndSiteVisitForm onNext={handleNext} extractedData={extractedData} />}
+      {step === 3 && <DocumentForm onNext={handleNext} extractedData={extractedData} />}
+      {step === 4 && <PropertyAndUnits onNext={handleNext} extractedData={extractedData} />}
+      {step === 5 && <NdmaAndValuation onNext={handleNext} extractedData={extractedData} />}
+      {step === 6 && <Floorwise onNext={handleNext} extractedData={extractedData} />}
 
       <div className="mt-6 flex justify-between">
         {step > 1 && step <= TOTAL_STEPS && (

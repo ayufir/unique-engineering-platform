@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const SideBoundaries = ({ onNext }) => {
+const SideBoundaries = ({ extractedData, onNext }) => {
   const [isOpen, setIsOpen] = useState(false);
 const [formData, setFormData] = useState({
   east: "SHOP NO. 03-A",
@@ -35,6 +35,42 @@ const [formData, setFormData] = useState({
   qualityFixturesSettings: "GOOD",
   doorsWindows: "YES"
 });
+
+  React.useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const bounds = p.boundaries || {};
+      const propDet = p.property_details || {};
+      const val = p.valuation_details || {};
+      const accom = p.accommodation_details || {};
+
+      setFormData((prev) => ({
+        ...prev,
+        east: bounds.east_actual || bounds.east_as_per_deed || extractedData.east || prev.east,
+        west: bounds.west_actual || bounds.west_as_per_deed || extractedData.west || prev.west,
+        north: bounds.north_actual || bounds.north_as_per_deed || extractedData.north || prev.north,
+        south: bounds.south_actual || bounds.south_as_per_deed || extractedData.south || prev.south,
+        boundariesMatching: extractedData.boundariesMatching || prev.boundariesMatching,
+        propertyIdentified: propDet.property_identification || extractedData.propertyIdentified || prev.propertyIdentified,
+        plotDemarcated: propDet.property_demarcated || extractedData.plotDemarcated || prev.plotDemarcated,
+        amenities: propDet.amenities || accom.amenities || extractedData.amenities || prev.amenities,
+        dimensionE: bounds.east_dimension || extractedData.dimensionE || prev.dimensionE,
+        dimensionN: bounds.north_dimension || extractedData.dimensionN || prev.dimensionN,
+        dimensionW: bounds.west_dimension || extractedData.dimensionW || prev.dimensionW,
+        dimensionS: bounds.south_dimension || extractedData.dimensionS || prev.dimensionS,
+        totalPlotArea: val.plot_area_physical || extractedData.totalPlotArea || prev.totalPlotArea,
+        landPlotAreaDoc: val.plot_area_in_deed || extractedData.landPlotAreaDoc || prev.landPlotAreaDoc,
+        landPlotAreaPlan: val.plot_area_plan || extractedData.landPlotAreaPlan || prev.landPlotAreaPlan,
+        landPlotAreaSite: val.plot_area_physical || extractedData.landPlotAreaSite || prev.landPlotAreaSite,
+        builtUpAreaPlan: val.carpet_area_plan || extractedData.builtUpAreaPlan || prev.builtUpAreaPlan,
+        builtUpAreaActual: val.carpet_area_measurement || extractedData.builtUpAreaActual || prev.builtUpAreaActual,
+        typeOfStructure: accom.type_of_structure || extractedData.typeOfStructure || prev.typeOfStructure,
+        noOfUnitsPerFloor: propDet.no_of_units_on_each_floor || extractedData.noOfUnitsPerFloor || prev.noOfUnitsPerFloor,
+        qualityOfConstruction: accom.quality_of_construction || extractedData.qualityOfConstruction || prev.qualityOfConstruction,
+        configuration: accom.flat_configuration || extractedData.configuration || prev.configuration,
+      }));
+    }
+  }, [extractedData]);
 const handleChange = (e) => {
 
     const { name, value } = e.target;

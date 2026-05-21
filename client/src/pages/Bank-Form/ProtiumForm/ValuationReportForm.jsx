@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const ValuationForm = ({ onNext }) => {
+const ValuationForm = ({ extractedData, onNext }) => {
   const [isOpen, setIsOpen] = useState(false);
 const [formData, setFormData] = useState({
 
@@ -28,6 +28,43 @@ const [formData, setFormData] = useState({
     floorWiseUsage: "B+G+2",
     ageOfTheProperty: "57"
 });
+
+  React.useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const addr = p.address || {};
+      const loc = p.location_details || {};
+      const propDet = p.property_details || {};
+      const accom = p.accommodation_details || {};
+
+      setFormData((prev) => ({
+        ...prev,
+        leadId: p.case_reference_no || extractedData.leadId || prev.leadId,
+        valuerName: p.valuer_name || extractedData.valuerName || prev.valuerName,
+        date: p.date_of_report || p.date_of_inspection || extractedData.date || prev.date,
+        nameOfApplicant: p.applicant_name || extractedData.nameOfApplicant || prev.nameOfApplicant,
+        nameOfPropertyOwner: p.owner_name || p.property_owner || extractedData.nameOfPropertyOwner || prev.nameOfPropertyOwner,
+        propertyAddressSite: addr.full_address || extractedData.propertyAddressSite || prev.propertyAddressSite,
+        legalAddress: addr.full_address || extractedData.legalAddress || prev.legalAddress,
+        contactNoOfOwner: p.contact_no || extractedData.contactNoOfOwner || prev.contactNoOfOwner,
+        landmark: loc.landmark || extractedData.landmark || prev.landmark,
+        dateOfTechnicalVisit: p.date_of_inspection || extractedData.dateOfTechnicalVisit || prev.dateOfTechnicalVisit,
+        propertyUsage: p.property_type || extractedData.propertyUsage || prev.propertyUsage,
+        occupancy: propDet.occupancy || extractedData.occupancy || prev.occupancy,
+        habitation: propDet.habitation || extractedData.habitation || prev.habitation,
+        wardNo: loc.ward_no || extractedData.wardNo || prev.wardNo,
+        typeOfLocality: loc.type_of_locality || extractedData.typeOfLocality || prev.typeOfLocality,
+        distanceFromCityCentre: loc.distance_from_city_center || extractedData.distanceFromCityCentre || prev.distanceFromCityCentre,
+        siteAccess: p.site_access || extractedData.siteAccess || prev.siteAccess,
+        corporationLimit: p.corporation_limit || extractedData.corporationLimit || prev.corporationLimit,
+        panchayatUnion: p.panchayat_union || extractedData.panchayatUnion || prev.panchayatUnion,
+        conditionsOfApproachRoad: loc.condition_of_approach_road || extractedData.conditionsOfApproachRoad || prev.conditionsOfApproachRoad,
+        noOfFloors: propDet.no_of_floors_actual || extractedData.noOfFloors || prev.noOfFloors,
+        floorWiseUsage: p.floor_wise_usage || extractedData.floorWiseUsage || prev.floorWiseUsage,
+        ageOfTheProperty: accom.age_of_property || propDet.age_of_property || extractedData.ageOfTheProperty || prev.ageOfTheProperty,
+      }));
+    }
+  }, [extractedData]);
 const handleChange = (e) => {
 
     const { name, value } = e.target;

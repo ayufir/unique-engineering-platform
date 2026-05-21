@@ -15,6 +15,7 @@ import BuildingDetails from "./Form/BuildingDetails";
 import Valuation from "./Form/Valuation";
 import StageConstruction from "./Form/StageConstruction";
 import OtherValue from "./Form/OtherValue";
+import AutoFillForm from "../../AutoFillForm";
 
 import {
   createDetails,
@@ -31,6 +32,7 @@ const Primal = () => {
   const [step, setStep] = useState(1);
   const [isEdit, setIsEdit] = useState({});
   const [collectedData, setCollectedData] = useState({});
+  const [extractedData, setExtractedData] = useState({});
   const { loading, error } = useSelector((state) => state.primal);
 
   const { id } = useParams();
@@ -178,9 +180,12 @@ const Primal = () => {
           <h1 className='text-3xl font-bold'>Valuation Form</h1>
         </div>
 
+        <AutoFillForm setFormData={setExtractedData} />
+
         {step === 1 && (
           <BasicDetail
             isEdit={isEdit}
+            extractedData={extractedData}
             onNext={handleNext}
             onBack={handleBack}
           />
@@ -188,6 +193,7 @@ const Primal = () => {
         {step === 2 && (
           <AreaDetails
             isEdit={isEdit}
+            extractedData={extractedData}
             onNext={handleNext}
             onBack={handleBack}
           />
@@ -195,16 +201,18 @@ const Primal = () => {
         {step === 3 && (
           <IndividualValuation
             isEdit={isEdit}
+            extractedData={extractedData}
             onNext={handleNext}
             onBack={handleBack}
           />
         )}
         {step === 4 && (
-          <Boundaries isEdit={isEdit} onNext={handleNext} onBack={handleBack} />
+          <Boundaries isEdit={isEdit} extractedData={extractedData} onNext={handleNext} onBack={handleBack} />
         )}
         {step === 5 && (
           <SurroundingLocality
             isEdit={isEdit}
+            extractedData={extractedData}
             onNext={handleNext}
             onBack={handleBack}
           />
@@ -212,6 +220,7 @@ const Primal = () => {
         {step === 6 && (
           <SanctionPlan
             isEdit={isEdit}
+            extractedData={extractedData}
             onNext={handleNext}
             onBack={handleBack}
           />
@@ -219,6 +228,7 @@ const Primal = () => {
         {step === 7 && (
           <PropertyDetails
             isEdit={isEdit}
+            extractedData={extractedData}
             onNext={handleNext}
             onBack={handleBack}
           />
@@ -226,6 +236,7 @@ const Primal = () => {
         {step === 8 && (
           <NdmaParameters
             isEdit={isEdit}
+            extractedData={extractedData}
             onNext={handleNext}
             onBack={handleBack}
           />
@@ -233,22 +244,24 @@ const Primal = () => {
         {step === 9 && (
           <BuildingDetails
             isEdit={isEdit}
+            extractedData={extractedData}
             onNext={handleNext}
             onBack={handleBack}
           />
         )}
         {step === 10 && (
-          <Valuation isEdit={isEdit} onNext={handleNext} onBack={handleBack} />
+          <Valuation isEdit={isEdit} extractedData={extractedData} onNext={handleNext} onBack={handleBack} />
         )}
         {step === 11 && (
           <StageConstruction
             isEdit={isEdit}
+            extractedData={extractedData}
             onNext={handleNext}
             onBack={handleBack}
           />
         )}
         {step === 12 && (
-          <OtherValue isEdit={isEdit} onNext={handleNext} onBack={handleBack} />
+          <OtherValue isEdit={isEdit} extractedData={extractedData} onNext={handleNext} onBack={handleBack} />
         )}
 
         {step === 12 && id && user?.role === "Admin" && (

@@ -13,33 +13,49 @@ const FLoorWise = ({
     const [form] = Form.useForm();
 
     useEffect(() => {
-        const merged = { ...extractedData, ...isEdit };
+        const currentValues = form.getFieldsValue();
+        const merged = { ...isEdit };
+
+        if (extractedData) {
+            Object.entries(extractedData).forEach(([key, val]) => {
+                if (val !== null && val !== undefined && val !== "") {
+                    merged[key] = val;
+                }
+            });
+        }
 
         if (merged) {
+            const safeVal = (key, fallback = "") => {
+                if (merged[key] !== undefined && merged[key] !== null && merged[key] !== "") {
+                    return merged[key];
+                }
+                return currentValues[key] !== undefined && currentValues[key] !== null ? currentValues[key] : fallback;
+            };
+
             form.setFieldsValue({
-                gfPlan: merged.gfPlan || "",
-                gfSite: merged.gfSite || "",
-                gfRemark: merged.gfRemark || "NA",
+                gfPlan: safeVal("gfPlan"),
+                gfSite: safeVal("gfSite"),
+                gfRemark: safeVal("gfRemark", "NA"),
 
-                ffPlan: merged.ffPlan || "",
-                ffSite: merged.ffSite || "",
-                ffRemark: merged.ffRemark || "NA",
+                ffPlan: safeVal("ffPlan"),
+                ffSite: safeVal("ffSite"),
+                ffRemark: safeVal("ffRemark", "NA"),
 
-                sfPlan: merged.sfPlan || "",
-                sfSite: merged.sfSite || "",
-                sfRemark: merged.sfRemark || "NA",
+                sfPlan: safeVal("sfPlan"),
+                sfSite: safeVal("sfSite"),
+                sfRemark: safeVal("sfRemark", "NA"),
 
-                tfPlan: merged.tfPlan || "",
-                tfSite: merged.tfSite || "",
-                tfRemark: merged.tfRemark || "NA",
+                tfPlan: safeVal("tfPlan"),
+                tfSite: safeVal("tfSite"),
+                tfRemark: safeVal("tfRemark", "NA"),
 
-                fifthPlan: merged.fifthPlan || "",
-                fifthSite: merged.fifthSite || "",
-                fifthRemark: merged.fifthRemark || "NA",
+                fifthPlan: safeVal("fifthPlan"),
+                fifthSite: safeVal("fifthSite"),
+                fifthRemark: safeVal("fifthRemark", "NA"),
 
-                totalPlan: merged.totalPlan || "",
-                totalSite: merged.totalSite || "",
-                totalRemark: merged.totalRemark || "NA",
+                totalPlan: safeVal("totalPlan"),
+                totalSite: safeVal("totalSite"),
+                totalRemark: safeVal("totalRemark", "NA"),
             });
         }
     }, [isEdit, extractedData, form]);

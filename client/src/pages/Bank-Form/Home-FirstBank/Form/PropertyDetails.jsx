@@ -41,46 +41,109 @@
     };
 
     useEffect(() => {
-      const merged = { ...extractedData, ...isEdit };
+      const currentValues = form.getFieldsValue();
+      const merged = { ...isEdit };
+
+      if (extractedData && Object.keys(extractedData).length > 0) {
+        const p = extractedData.property || {};
+        const bounds = p.boundaries || {};
+        const propDet = p.property_details || {};
+        const accom = p.accommodation_details || {};
+        const val = p.valuation_details || {};
+
+        const mapped = {
+          boundariesMatching: extractedData.boundariesMatching,
+          propertyDemarcated: propDet.property_identification || propDet.property_demarcated || extractedData.propertyDemarcated,
+          plotArea: val.plot_area_physical || p.plot_area || extractedData.plotArea,
+          landArea: val.plot_area_physical || p.plot_area || extractedData.landArea,
+          marketability: accom.marketability || extractedData.marketability,
+          typeOfStructure: p.property_sub_type || accom.type_of_structure || extractedData.typeOfStructure,
+          qualityOfConstruction: accom.quality_of_construction || extractedData.qualityOfConstruction,
+          approxAgeOfProperty: accom.age_of_property || extractedData.approxAgeOfProperty,
+          residualAge: accom.residual_age || extractedData.residualAge,
+          directions: {
+            North: {
+              document: bounds.north_as_per_deed || extractedData.northDocument,
+              actual: bounds.north_actual || extractedData.northActual,
+            },
+            South: {
+              document: bounds.south_as_per_deed || extractedData.southDocument,
+              actual: bounds.south_actual || extractedData.southActual,
+            },
+            East: {
+              document: bounds.east_as_per_deed || extractedData.eastDocument,
+              actual: bounds.east_actual || extractedData.eastActual,
+            },
+            West: {
+              document: bounds.west_as_per_deed || extractedData.westDocument,
+              actual: bounds.west_actual || extractedData.westActual,
+            },
+          }
+        };
+
+        Object.entries(mapped).forEach(([key, val]) => {
+          if (val !== null && val !== undefined && val !== "") {
+            merged[key] = val;
+          }
+        });
+      }
+
       if (merged) {
+        const safeVal = (key, fallback = "") => {
+          if (merged[key] !== undefined && merged[key] !== null && merged[key] !== "") {
+            return merged[key];
+          }
+          return currentValues[key] !== undefined && currentValues[key] !== null ? currentValues[key] : fallback;
+        };
+
+        const safeNested = (dir, field, fallback = "") => {
+          const extVal = merged?.directions?.[dir]?.[field] || merged[`${dir.toLowerCase()}${field.charAt(0).toUpperCase()}${field.slice(1)}`] || "";
+          if (extVal !== undefined && extVal !== null && extVal !== "") {
+            return extVal;
+          }
+          return currentValues?.directions?.[dir]?.[field] !== undefined && currentValues?.directions?.[dir]?.[field] !== null 
+            ? currentValues.directions[dir][field] 
+            : fallback;
+        };
+
         form.setFieldsValue({
           directions: {
             North: {
-              document: merged?.directions?.North?.document || merged.northDocument || "",
-              actual: merged?.directions?.North?.actual || merged.northActual || "",
-              plan: merged?.directions?.North?.plan || merged.northPlan || "",
+              document: safeNested("North", "document"),
+              actual: safeNested("North", "actual"),
+              plan: safeNested("North", "plan"),
             },
             South: {
-              document: merged?.directions?.South?.document || merged.southDocument || "",
-              actual: merged?.directions?.South?.actual || merged.southActual || "",
-              plan: merged?.directions?.South?.plan || merged.southPlan || "",
+              document: safeNested("South", "document"),
+              actual: safeNested("South", "actual"),
+              plan: safeNested("South", "plan"),
             },
             East: {
-              document: merged?.directions?.East?.document || merged.eastDocument || "",
-              actual: merged?.directions?.East?.actual || merged.eastActual || "",
-              plan: merged?.directions?.East?.plan || merged.eastPlan || "",
+              document: safeNested("East", "document"),
+              actual: safeNested("East", "actual"),
+              plan: safeNested("East", "plan"),
             },
             West: {
-              document: merged?.directions?.West?.document || merged.westDocument || "",
-              actual: merged?.directions?.West?.actual || merged.westActual || "",
-              plan: merged?.directions?.West?.plan || merged.westPlan || "",
+              document: safeNested("West", "document"),
+              actual: safeNested("West", "actual"),
+              plan: safeNested("West", "plan"),
             },
           },
-          boundariesMatching: merged.boundariesMatching || "",
-          propertyDemarcated: merged.propertyDemarcated || "YES",
-          boundaryRemarks: merged.boundaryRemarks || "",
-          plotArea: merged.plotArea || "",
-          linearDimension: merged.linearDimension || "",
-          marketability: merged.marketability || "Average",
-          typeOfStructure: merged.typeOfStructure || "",
-          typeOfRoof: merged.typeOfRoof || "",
-          noOfFloorsPermissible: merged.noOfFloorsPermissible || "NA",
-          noOfFloorsActual: merged.noOfFloorsActual || "",
-          noOfUnitFlatOnEachFloor: merged.noOfUnitFlatOnEachFloor || "NA",
-          qualityOfConstruction: merged.qualityOfConstruction || "Average",
-          approxAgeOfProperty: merged.approxAgeOfProperty || "",
-          residualAge: merged.residualAge || "",
-          landArea: merged.landArea || "",
+          boundariesMatching: safeVal("boundariesMatching"),
+          propertyDemarcated: safeVal("propertyDemarcated", "YES"),
+          boundaryRemarks: safeVal("boundaryRemarks"),
+          plotArea: safeVal("plotArea"),
+          linearDimension: safeVal("linearDimension"),
+          marketability: safeVal("marketability", "Average"),
+          typeOfStructure: safeVal("typeOfStructure"),
+          typeOfRoof: safeVal("typeOfRoof"),
+          noOfFloorsPermissible: safeVal("noOfFloorsPermissible", "NA"),
+          noOfFloorsActual: safeVal("noOfFloorsActual"),
+          noOfUnitFlatOnEachFloor: safeVal("noOfUnitFlatOnEachFloor", "NA"),
+          qualityOfConstruction: safeVal("qualityOfConstruction", "Average"),
+          approxAgeOfProperty: safeVal("approxAgeOfProperty"),
+          residualAge: safeVal("residualAge"),
+          landArea: safeVal("landArea"),
         });
       }
     }, [isEdit, extractedData, form]);

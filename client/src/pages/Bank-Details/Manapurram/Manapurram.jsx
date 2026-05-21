@@ -1097,8 +1097,38 @@ export default function ManappuramForm() {
     const handleAutoFill = createAutoFillAdapter(
         MANAPPURAM_MAPPING,
         (mappedData, extractedData) => {
-            const previewForm = applyMappedFields(form, mappedData);
-            const nextRemarks = buildManappuramRemarks(extractedData, previewForm);
+            // First merge and compute calculations on previewForm so remark builder gets the correct landRate/constructionRate values!
+            const previewFormRaw = applyMappedFields(form, mappedData);
+            
+            // Re-calculate GLR and PMR values for the previewForm
+            const gPreview = { ...previewFormRaw.valuationGLR };
+            gPreview.landValue = String(
+                Math.round(
+                    (parseFloat(gPreview.landArea) || 0) * (parseFloat(gPreview.landRate) || 0)
+                )
+            );
+            previewFormRaw.valuationGLR = gPreview;
+
+            const pPreview = { ...previewFormRaw.valuationPMR };
+            const lvPreview =
+                (parseFloat(pPreview.landArea) || 0) * (parseFloat(pPreview.landRate) || 0);
+            const cvPreview =
+                (parseFloat(pPreview.constructionArea) || 0) *
+                (parseFloat(pPreview.constructionRate) || 0);
+            pPreview.landValue = String(Math.round(lvPreview));
+            pPreview.constructionValue = String(Math.round(cvPreview));
+            pPreview.totalValue = String(Math.round(lvPreview + cvPreview));
+            const distressPreview = Math.round((lvPreview + cvPreview) * 0.85);
+            previewFormRaw.valuationPMR = pPreview;
+            previewFormRaw.distressValue = String(distressPreview);
+
+            previewFormRaw.summary = {
+                ...previewFormRaw.summary,
+                presentMarketValue: pPreview.totalValue,
+                forcedSaleValue: String(distressPreview),
+            };
+
+            const nextRemarks = buildManappuramRemarks(extractedData, previewFormRaw);
 
             setAutoFilledFields(
                 nextRemarks?.length
@@ -1107,6 +1137,35 @@ export default function ManappuramForm() {
             );
             setForm((prev) => {
                 const nextForm = applyMappedFields(prev, mappedData);
+                
+                // Re-calculate valuationGLR and valuationPMR for the final form state
+                const g = { ...nextForm.valuationGLR };
+                g.landValue = String(
+                    Math.round(
+                        (parseFloat(g.landArea) || 0) * (parseFloat(g.landRate) || 0)
+                    )
+                );
+                nextForm.valuationGLR = g;
+
+                const p = { ...nextForm.valuationPMR };
+                const lv =
+                    (parseFloat(p.landArea) || 0) * (parseFloat(p.landRate) || 0);
+                const cv =
+                    (parseFloat(p.constructionArea) || 0) *
+                    (parseFloat(p.constructionRate) || 0);
+                p.landValue = String(Math.round(lv));
+                p.constructionValue = String(Math.round(cv));
+                p.totalValue = String(Math.round(lv + cv));
+                const distress = Math.round((lv + cv) * 0.85);
+                nextForm.valuationPMR = p;
+                nextForm.distressValue = String(distress);
+
+                nextForm.summary = {
+                    ...nextForm.summary,
+                    presentMarketValue: p.totalValue,
+                    forcedSaleValue: String(distress),
+                };
+
                 return nextRemarks?.length
                     ? { ...nextForm, remarks: nextRemarks }
                     : nextForm;
@@ -1562,6 +1621,18 @@ export default function ManappuramForm() {
 </div>
 
             <div className="p-4">
+                <div className="print:hidden mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                    <div className="mb-2 text-sm font-semibold text-slate-800">
+                        AI Auto-fill
+                    </div>
+                    <AutoFillForm setFormData={handleAutoFill} />
+                    {autoFilledFields.length > 0 && (
+                        <div className="mt-3 text-xs text-slate-600">
+                            {autoFilledFields.length} fields auto-filled from uploaded documents.
+                        </div>
+                    )}
+                </div>
+
                 <div className="border-2 border-black flex items-start p-2">
                     <div className="w-full text-center py-2">
                         <img
@@ -2606,19 +2677,6 @@ export default function ManappuramForm() {
                         />
                     </div>
                 </div>
-
-                <div className="no-print mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
-                    <div className="mb-2 text-sm font-semibold text-slate-800">
-                        AI Auto-fill
-                    </div>
-                    <AutoFillForm setFormData={handleAutoFill} />
-                    {autoFilledFields.length > 0 && (
-                        <div className="mt-3 text-xs text-slate-600">
-                            {autoFilledFields.length} fields auto-filled from uploaded documents.
-                        </div>
-                    )}
-                </div>
-
                 <div className="no-print flex gap-3 justify-center mt-4 mb-6">
                     <button
                         onClick={handleSubmit}

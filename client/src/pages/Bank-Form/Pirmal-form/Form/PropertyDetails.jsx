@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-const PropertyDetails = ({ isEdit, onNext, onBack }) => {
+const PropertyDetails = ({ isEdit, extractedData, onNext, onBack }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [formData, setFormData] = useState({
     qualityOfConstruction: "",
@@ -19,26 +19,56 @@ const PropertyDetails = ({ isEdit, onNext, onBack }) => {
     finalLandArea: "",
   });
 
-  // Initialize formData when editing
+  // Initialize formData when editing or extracting
   useEffect(() => {
-    if (isEdit) {
-      setFormData({
-        qualityOfConstruction: isEdit.qualityOfConstruction || "",
-        occupancyOfProperty: isEdit.occupancyOfProperty || "",
-        multiTenantedProperty: isEdit.multiTenantedProperty || "",
-        numberOfTenants: isEdit.numberOfTenants || "",
-        vacantSince: isEdit.vacantSince || "",
-        reasonForVacant: isEdit.reasonForVacant || "",
-        landAreaAsPerPlan: isEdit.landAreaAsPerPlan || "",
-        landAreaAsPerTitle: isEdit.landAreaAsPerTitle || "",
-        landAreaAsPerSite: isEdit.landAreaAsPerSite || "",
-        residentialArea: isEdit.residentialArea || "",
-        commercialArea: isEdit.commercialArea || "",
-        typeOfPlot: isEdit.typeOfPlot || "",
-        finalLandArea: isEdit.finalLandArea || "",
-      });
-    }
-  }, [isEdit]);
+    setFormData((prev) => {
+      let newData = { ...prev };
+
+      if (isEdit) {
+        newData = {
+          ...newData,
+          qualityOfConstruction: isEdit.qualityOfConstruction || "",
+          occupancyOfProperty: isEdit.occupancyOfProperty || "",
+          multiTenantedProperty: isEdit.multiTenantedProperty || "",
+          numberOfTenants: isEdit.numberOfTenants || "",
+          vacantSince: isEdit.vacantSince || "",
+          reasonForVacant: isEdit.reasonForVacant || "",
+          landAreaAsPerPlan: isEdit.landAreaAsPerPlan || "",
+          landAreaAsPerTitle: isEdit.landAreaAsPerTitle || "",
+          landAreaAsPerSite: isEdit.landAreaAsPerSite || "",
+          residentialArea: isEdit.residentialArea || "",
+          commercialArea: isEdit.commercialArea || "",
+          typeOfPlot: isEdit.typeOfPlot || "",
+          finalLandArea: isEdit.finalLandArea || "",
+        };
+      }
+
+      if (extractedData && Object.keys(extractedData).length > 0) {
+        const p = extractedData.property || {};
+        const accom = p.accommodation_details || {};
+        const propDet = p.property_details || {};
+        const val = p.valuation_details || {};
+
+        newData = {
+          ...newData,
+          qualityOfConstruction: accom.quality_of_construction || extractedData.qualityOfConstruction || newData.qualityOfConstruction,
+          occupancyOfProperty: propDet.occupancy || extractedData.occupancyOfProperty || newData.occupancyOfProperty,
+          multiTenantedProperty: propDet.multi_tenanted || extractedData.multiTenantedProperty || newData.multiTenantedProperty,
+          numberOfTenants: propDet.no_of_tenants || extractedData.numberOfTenants || newData.numberOfTenants,
+          vacantSince: propDet.vacant_since || extractedData.vacantSince || newData.vacantSince,
+          landAreaAsPerPlan: val.plot_area_plan || extractedData.landAreaAsPerPlan || newData.landAreaAsPerPlan,
+          landAreaAsPerTitle: val.plot_area_in_deed || extractedData.landAreaAsPerTitle || newData.landAreaAsPerTitle,
+          landAreaAsPerSite: val.plot_area_physical || extractedData.landAreaAsPerSite || newData.landAreaAsPerSite,
+          residentialArea: accom.residential_area || extractedData.residentialArea || newData.residentialArea,
+          commercialArea: accom.commercial_area || extractedData.commercialArea || newData.commercialArea,
+          typeOfPlot: p.property_type || extractedData.typeOfPlot || newData.typeOfPlot,
+          finalLandArea: val.plot_area_physical || val.plot_area_in_deed || extractedData.finalLandArea || newData.finalLandArea,
+        };
+      }
+
+      return newData;
+    });
+  }, [isEdit, extractedData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

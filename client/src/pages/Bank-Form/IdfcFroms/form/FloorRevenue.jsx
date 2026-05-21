@@ -409,6 +409,30 @@ const FloorRevenue = ({ onDataChange }) => {
     propertyAreaDetails: "",
   });
 
+  useEffect(() => {
+    if (extractedData && Object.keys(extractedData).length > 0) {
+      const p = extractedData.property || {};
+      const val = p.valuation_details || {};
+
+      setFormData((prev) => ({
+        ...prev,
+        carpetAreaMeasured: val.carpet_area_measurement || extractedData.carpetAreaMeasured || prev.carpetAreaMeasured,
+        carpetAreaAgreement: val.carpet_area_plan || extractedData.carpetAreaAgreement || prev.carpetAreaAgreement,
+        carpetAreaApp: val.carpet_area_plan || extractedData.carpetAreaApp || prev.carpetAreaApp,
+        superArea: val.super_built_up_area || extractedData.superArea || prev.superArea,
+        ratePerSqft: val.construction_rate || val.land_rate || val.plot_area_physical_rate || extractedData.ratePerSqft || prev.ratePerSqft,
+        comparisonValue: val.market_rate || extractedData.comparisonValue || prev.comparisonValue,
+        govtApprovedRate: val.government_value || extractedData.govtApprovedRate || prev.govtApprovedRate,
+        totalValue: val.total_value || extractedData.totalValue || prev.totalValue,
+        constructionStage: p.construction_stage || val.construction_status || extractedData.constructionStage || prev.constructionStage,
+        constructionPercentage: val.completion_percentage || extractedData.constructionPercentage || prev.constructionPercentage,
+        constructionStatus: p.construction_stage || extractedData.constructionStatus || prev.constructionStatus,
+        totalMarketValue: val.total_value || extractedData.totalMarketValue || prev.totalMarketValue,
+        forcedSaleValue: val.distress_value || extractedData.forcedSaleValue || prev.forcedSaleValue,
+      }));
+    }
+  }, [extractedData]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));

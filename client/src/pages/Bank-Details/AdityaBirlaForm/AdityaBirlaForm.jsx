@@ -676,7 +676,7 @@ export default function AdityaBirlaForm() {
 
             {/* Report Content */}
             <div className="p-4 print:p-0">
-                {/* <div className="print:hidden mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                <div className="print:hidden mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
                     <div className="mb-2 text-sm font-semibold text-slate-800">
                         AI Auto-fill
                     </div>
@@ -686,7 +686,7 @@ export default function AdityaBirlaForm() {
                             {autoFilledFields.length} fields auto-filled from uploaded documents.
                         </div>
                     )}
-                </div> */}
+                </div>
 
                 {/* Header */}
                 <div className="border-2 border-black flex items-start p-2 gap-2 print:border-2">
@@ -942,18 +942,6 @@ export default function AdityaBirlaForm() {
                         <tr><td className="border border-black p-1 text-[9.5px]">• Report Finalized by – Mr.</td><td colSpan="3" className="border border-black p-1"><input className="w-full outline-none bg-transparent text-xs" value={E.reportFinalizedBy} onChange={e => set("engineerDetails", "reportFinalizedBy", e.target.value)} placeholder="ER. RITIK RATHORE" /></td></tr>
                     </tbody>
                 </table>
-            </div>
-
-            <div className="print:hidden mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
-                <div className="mb-2 text-sm font-semibold text-slate-800">
-                    AI Auto-fill
-                </div>
-                <AutoFillForm setFormData={handleAutoFill} />
-                {autoFilledFields.length > 0 && (
-                    <div className="mt-3 text-xs text-slate-600">
-                        {autoFilledFields.length} fields auto-filled from uploaded documents.
-                    </div>
-                )}
             </div>
         </div>
     );
