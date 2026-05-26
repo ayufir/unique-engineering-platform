@@ -887,9 +887,32 @@ const AutoFillForm = ({ setFormData }) => {
             }
             console.log("🔥 Received autofill data from Extension:", event.data.data);
             try {
-                const mapped = mapDocumentToFormData(event.data.data);
+                let mapped = {};
+                // If it looks like raw AI JSON, map it. Otherwise assume it's flat downloaded JSON.
+                if (event.data.data.property || event.data.data.Property_Details || event.data.data.basic_details) {
+                    mapped = mapDocumentToFormData(event.data.data);
+                } else {
+                    mapped = event.data.data;
+                }
+
+                if (event.data.photos && event.data.photos.length > 0) {
+                    const parsedPhotos = event.data.photos.map(photo => {
+                        const arr = photo.dataUrl.split(',');
+                        const bstr = atob(arr[1]);
+                        let n = bstr.length;
+                        const u8arr = new Uint8Array(n);
+                        while(n--){
+                            u8arr[n] = bstr.charCodeAt(n);
+                        }
+                        return new File([u8arr], photo.name, {type: photo.type});
+                    });
+                    
+                    // Assign to sitePhotographs
+                    mapped.sitePhotographs = parsedPhotos;
+                }
+
                 setFormData(mapped);
-                message.success("Data filled directly from Extension!");
+                message.success("Data and Photos filled directly from Extension!");
             } catch (err) {
                 console.error("Error mapping extension data:", err);
             }
