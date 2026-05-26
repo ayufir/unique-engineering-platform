@@ -19,7 +19,7 @@ export const createIciciBank = createAsyncThunk(
       const response = await axios.post(API_URL, dataToSend);
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || err.message);
+      return rejectWithValue(err.response?.data?.error || err.response?.data?.message || err.message);
     }
   }
 );
@@ -32,7 +32,7 @@ export const getAllIciciBanks = createAsyncThunk(
       const response = await axios.get(API_URL);
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || err.message);
+      return rejectWithValue(err.response?.data?.error || err.response?.data?.message || err.message);
     }
   }
 );
@@ -45,7 +45,7 @@ export const getIciciBankById = createAsyncThunk(
       const response = await axios.get(`${API_URL}/${id}`);
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || err.message);
+      return rejectWithValue(err.response?.data?.error || err.response?.data?.message || err.message);
     }
   }
 );
@@ -58,7 +58,7 @@ export const updateIciciBank = createAsyncThunk(
       const response = await axios.put(`${API_URL}/${id}`, formData);
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || err.message);
+      return rejectWithValue(err.response?.data?.error || err.response?.data?.message || err.message);
     }
   }
 );
@@ -71,7 +71,7 @@ export const submitIciciBank = createAsyncThunk(
       const response = await axios.put(`${API_URL}/${id}/submit`, formData);
       return response.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || err.message);
+      return rejectWithValue(err.response?.data?.error || err.response?.data?.message || err.message);
     }
   }
 );

@@ -267,17 +267,24 @@ const RemarksForm = ({
     }));
   };
 
-  const buildPayload = () => ({
-    ...form,
-    personRole: form.relationshipPerson,
-    personContact: form.mobileNo
-      ? `${form.countryCode}${form.mobileNo}`
-      : form.personContact || "",
-    siteVisits: Number(form.siteVisits) || 0,
-    verifiedBy: form.visitedBy,
-    verificationType: form.visitedUserType,
-    visitDate: form.visitDate,
-  });
+  const buildPayload = () => {
+    const payload = {
+      ...form,
+      personRole: form.relationshipPerson,
+      personContact: form.mobileNo
+        ? `${form.countryCode}${form.mobileNo}`
+        : form.personContact || "",
+      verifiedBy: form.visitedBy,
+      verificationType: form.visitedUserType,
+      visitDate: form.visitDate,
+    };
+    
+    if (form.siteVisits && !isNaN(Number(form.siteVisits))) {
+      payload.siteVisits = Number(form.siteVisits);
+    }
+    
+    return payload;
+  };
 
   const handleSave = () => {
     if (onSave) onSave("remarks", buildPayload());
