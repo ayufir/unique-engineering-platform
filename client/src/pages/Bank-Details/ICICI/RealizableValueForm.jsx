@@ -127,7 +127,7 @@ const RealizableValueForm = ({ data, editData, extractedData, onSave, onSaveAndN
   const propertyFloorDetailsError = "Please Complete the floor details under propertydetail";
 
   useEffect(() => {
-    const src = data || editData || {};
+    const src = (data && Object.keys(data).length > 0) ? data : (editData || {});
     const autofillData = extractedData || {};
     if (Object.keys(src).length === 0 && Object.keys(autofillData).length === 0) return;
 

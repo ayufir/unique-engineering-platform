@@ -13,7 +13,7 @@ const DistanceRangeForm = ({ data, editData, extractedData, onSave, onSaveAndNex
   });
 
   useEffect(() => {
-    const src = editData || data || {};
+    const src = (data && Object.keys(data).length > 0) ? data : (editData || {});
     const autofillData = extractedData || {};
     if (src) {
       setForm((prev) => ({ ...prev, ...src, ...autofillData }));

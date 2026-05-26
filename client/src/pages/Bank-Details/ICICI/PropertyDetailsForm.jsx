@@ -1531,7 +1531,7 @@ const PropertyDetailsForm = ({ data, editData, extractedData, onSave, onSaveAndN
   const hydratingSavedFloorsRef = useRef(false);
 
   useEffect(() => {
-    const src = editData || data || {};
+    const src = (data && Object.keys(data).length > 0) ? data : (editData || {});
     const autofillData = extractedData || {};
     
     // Only return if both are totally empty and we have no state to initialize

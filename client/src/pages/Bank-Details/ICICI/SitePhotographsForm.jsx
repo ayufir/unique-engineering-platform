@@ -8,7 +8,7 @@ const SitePhotographsForm = ({ data, editData, extractedData, onSave, onSaveAndN
   });
 
   useEffect(() => {
-    const src = editData || data || {};
+    const src = (data && Object.keys(data).length > 0) ? data : (editData || {});
     const autofillData = extractedData || {};
     if (src) {
       setForm((prev) => ({

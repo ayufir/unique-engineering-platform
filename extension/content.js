@@ -106,12 +106,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 if (text === 'subject property' || text === 'site photographs') {
                     let current = el;
                     for (let i = 0; i < 5; i++) { // search up to 5 ancestors
-                    if (current && current.parentElement) {
-                        current = current.parentElement;
-                        const input = current.querySelector('input[type="file"]');
-                        if (input) {
-                            targetInput = input;
-                            break;
+                        if (current && current.parentElement) {
+                            current = current.parentElement;
+                            const input = current.querySelector('input[type="file"]');
+                            if (input) {
+                                targetInput = input;
+                                break;
+                            }
                         }
                     }
                 }
