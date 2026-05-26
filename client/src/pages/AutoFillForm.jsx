@@ -1,7 +1,7 @@
 
 
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DocumentUpload from "../components/DocumentUpload";   // adjust path as needed
 import PhotoPreview from "../components/PhotoPreview";       // adjust path as needed
 import { Alert, Spin, message, Button } from "antd";
@@ -811,7 +811,8 @@ const mapDocumentToFormData = (doc) => {
     if (bua.ground_floor_remarks) data.groundFloorRmk = bua.ground_floor_remarks;
     if (bua.first_floor_remarks) data.firstFloorRmk = bua.first_floor_remarks;
 
-    return data;
+    // Preserve all original raw data from the JSON along with explicitly mapped fields
+    return { ...doc, ...data };
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -877,6 +878,26 @@ const AutoFillForm = ({ setFormData }) => {
         setFileName("");
         message.info("Auto-fill clear ho gaya");
     };
+
+    // Listen for data from the Chrome Extension
+    useEffect(() => {
+        const handleExtensionMessage = (event) => {
+            if (event.source !== window || !event.data || event.data.type !== 'EXTENSION_AUTOFILL') {
+                return;
+            }
+            console.log("🔥 Received autofill data from Extension:", event.data.data);
+            try {
+                const mapped = mapDocumentToFormData(event.data.data);
+                setFormData(mapped);
+                message.success("Data filled directly from Extension!");
+            } catch (err) {
+                console.error("Error mapping extension data:", err);
+            }
+        };
+
+        window.addEventListener('message', handleExtensionMessage);
+        return () => window.removeEventListener('message', handleExtensionMessage);
+    }, [setFormData]);
 
     return (
         <div style={{ marginBottom: 24 }}>

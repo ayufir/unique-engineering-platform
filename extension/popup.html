@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Auto-Fill Form</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        width: 250px;
+        padding: 10px;
+      }
+      .container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      button {
+        padding: 8px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      #status {
+        margin-top: 10px;
+        font-size: 12px;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h3>Auto-Fill JSON</h3>
+      
+      <label style="font-size: 14px; font-weight: bold;">Select JSON File:</label>
+      <input type="file" id="jsonFile" accept=".json" />
+      
+      <label style="font-size: 14px; font-weight: bold; margin-top: 10px;">Select Photos (Optional):</label>
+      <input type="file" id="photoFiles" accept="image/*" multiple />
+      
+      <button id="fillBtn" style="margin-top: 15px;">Auto-Fill Form</button>
+      <div id="status"></div>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>

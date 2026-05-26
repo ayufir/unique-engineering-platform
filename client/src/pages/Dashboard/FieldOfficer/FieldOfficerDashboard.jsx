@@ -553,7 +553,7 @@ const FieldOfficerDashboard = () => {
         } else {
           return (
             <Link
-              to={record.route || `/bank/${getBankRoute(record)}/${record._id}`}
+              to={`/bank/${getBankRoute(record)}/edit/${record._id}`}
               className='flex gap-3 items-center'
             >
               <Eye className='text-blue-600 hover:text-blue-800' />

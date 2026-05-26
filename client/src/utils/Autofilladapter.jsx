@@ -99,6 +99,20 @@ const cloneValue = (value) => {
     return value;
 };
 
+const deepMerge = (target, source) => {
+    if (!source || typeof source !== "object" || Array.isArray(source)) return source;
+    if (!target || typeof target !== "object" || Array.isArray(target)) target = {};
+    const result = { ...target };
+    for (const key in source) {
+        if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key])) {
+            result[key] = deepMerge(result[key], source[key]);
+        } else {
+            result[key] = source[key];
+        }
+    }
+    return result;
+};
+
 export const applyMappedFields = (baseObject, mappedFields) => {
     const nextState = cloneValue(baseObject ?? {});
 
@@ -123,7 +137,12 @@ export const applyMappedFields = (baseObject, mappedFields) => {
             cursor = cursor[key];
         }
 
-        cursor[pathParts[pathParts.length - 1]] = value;
+        const lastPart = pathParts[pathParts.length - 1];
+        if (value && typeof value === "object" && !Array.isArray(value)) {
+            cursor[lastPart] = deepMerge(cursor[lastPart] || {}, value);
+        } else {
+            cursor[lastPart] = value;
+        }
     });
 
     return nextState;
@@ -285,8 +304,11 @@ export const createAutoFillAdapter = (mapping, onMapped) => {
             }
         });
 
-        if (Object.keys(mapped).length > 0) {
-            onMapped(mapped, extractedData);
+        // Preserve all unmapped data from extractedData as well
+        const finalMapped = { ...extractedData, ...mapped };
+
+        if (Object.keys(finalMapped).length > 0) {
+            onMapped(finalMapped, extractedData);
         }
     };
 };

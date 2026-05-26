@@ -21,6 +21,8 @@ import DistanceRangeForm from "../../Bank-Details/ICICI/DistanceRangeForm";
 import SitePhotographsForm from "../../Bank-Details/ICICI/SitePhotographsForm";
 import RemarksForm from "../../Bank-Details/ICICI/RemarksForm";
 import AutoFillForm from "../../AutoFillForm";
+import { createAutoFillAdapter } from "../../../utils/Autofilladapter";
+import { ICICI_MAPPING } from "../../../config/Bankfieldmappings";
 
 import toast from "react-hot-toast";
 
@@ -267,6 +269,20 @@ const IciciBank = () => {
       setLoading(false);
     }
   };
+
+  const handleAutoFill = createAutoFillAdapter(
+    ICICI_MAPPING,
+    (mappedData, rawExtractedData) => {
+      setExtractedData(mappedData);
+      setFormData((prev) => {
+        const next = { ...prev, ...mappedData };
+        writeDraft(id, next);
+        return next;
+      });
+      setEditData((prev) => ({ ...prev, ...mappedData }));
+      toast.success("AI Data Extracted and Mapped Successfully!");
+    }
+  );
 
   const handleSave = async (cardKey, data) => {
     setSaving(true);
@@ -526,7 +542,7 @@ const IciciBank = () => {
 
             {activeCard === "propertyDetails" && (
               <div className="mb-4 border border-blue-200 rounded-lg p-4 bg-blue-50">
-                <AutoFillForm setFormData={setExtractedData} />
+                <AutoFillForm setFormData={handleAutoFill} />
               </div>
             )}
 

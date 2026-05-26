@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Table, Tag, Input, Select } from "antd";
 import { Link } from "react-router-dom";
-import { Edit3 } from "lucide-react";
+import { Edit3, Download } from "lucide-react";
 
 import { fetchTotalSubmitCase } from "../../../redux/features/assignedCase/assignedCasesThunk";
 import Spinner from "../../../components/Spinner";
@@ -95,6 +95,16 @@ const FinalSubmittedCases = ({ selectedMonth }) => {
     setCurrentPage(1);
   }, [selectedZone, selectedMonth, selectedBanks, selectedStatuses, debouncedSearch]);
 
+  const handleDownloadJson = (record) => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(record, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `submission_${record._id}.json`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
+
   const monthFilteredFinal = useMemo(() => {
     return (final || []).filter((item) =>
       isSameMonth(getCaseDate(item), selectedMonth)
@@ -137,9 +147,17 @@ const FinalSubmittedCases = ({ selectedMonth }) => {
           <Link
             to={`/bank/${getBankRoute(record)}/edit/${record._id}`}
             className="!text-green-600 hover:underline border p-1"
+            title="Edit Case"
           >
             <Edit3 size={18} />
           </Link>
+          <button
+            onClick={() => handleDownloadJson(record)}
+            className="!text-blue-600 hover:underline border p-1"
+            title="Download JSON"
+          >
+            <Download size={18} />
+          </button>
         </div>
       ),
     },

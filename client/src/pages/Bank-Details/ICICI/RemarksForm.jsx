@@ -140,6 +140,7 @@ const LineDatePicker = ({
 const RemarksForm = ({
   data,
   editData,
+  extractedData,
   onSave,
   onSubmit,
   onFinalSubmit,
@@ -288,6 +289,24 @@ const RemarksForm = ({
 
   const handleFinalSubmit = () => {
     if (onFinalSubmit) onFinalSubmit(buildPayload());
+  };
+
+  const handleDownloadJson = () => {
+    const fullState = { ...data, ...buildPayload() };
+    // Remove any File objects or functions if they exist (though sanitizeForSave does this normally, simple stringify is fine for backup)
+    const cleanState = JSON.parse(JSON.stringify(fullState, (key, value) => {
+        if (value instanceof File) return undefined;
+        return value;
+    }));
+    
+    const blob = new Blob([JSON.stringify(cleanState, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `icici-form-${editData?._id || "draft"}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("JSON Downloaded!");
   };
 
   const handlePreview = () => {
@@ -617,6 +636,23 @@ const RemarksForm = ({
             Final Submit
           </Button>
         )}
+        
+        <Button
+          onClick={handleDownloadJson}
+          style={{
+            borderColor: "#003b70",
+            color: "#003b70",
+            height: "38px",
+            paddingLeft: "24px",
+            paddingRight: "24px",
+            fontSize: "14px",
+            fontWeight: "500",
+            borderRadius: "4px",
+          }}
+          className="h-[38px] px-6 text-sm font-medium rounded-[4px] hover:bg-gray-50"
+        >
+          ⬇️ Download JSON
+        </Button>
       </div>
     </div>
   );
