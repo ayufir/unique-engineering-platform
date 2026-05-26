@@ -520,7 +520,19 @@ const IciciBank = () => {
         {/* FORM FULL WIDTH */}
         <div className="bg-white border-t border-[#eeeeee] pt-6 pb-12">
           <div className="flex justify-end mb-6">
-            
+            <button
+              onClick={() => {
+                if (window.confirm("Are you sure you want to clear the entire form? All unsaved data will be lost.")) {
+                  localStorage.removeItem(`icici-bank-draft:${id || "new"}`);
+                  setFormData({});
+                  setEditData({});
+                  window.location.reload();
+                }
+              }}
+              className="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-md hover:bg-red-100 transition-colors text-sm font-medium"
+            >
+              Clear Form
+            </button>
           </div>
 
           <div className="mb-6">
