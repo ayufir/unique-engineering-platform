@@ -1602,6 +1602,8 @@ const PropertyDetailsForm = ({ data, editData, extractedData, onSave, onSaveAndN
   const fetchPincode = useCallback(async (pin) => {
     if (!/^\d{6}$/.test(pin)) return;
     setPincodeLoading(true);
+    let success = false;
+    
     try {
       const res = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
       const json = await res.json();
@@ -1623,9 +1625,50 @@ const PropertyDetailsForm = ({ data, editData, extractedData, onSave, onSaveAndN
           streets: uniq(officeNames),
         });
         showToast(`${first.District}, ${first.State}`);
-      } else { showToast("Invalid pincode or no data found.", "error"); setPincodeOptions(null); }
-    } catch { showToast("Pincode lookup failed.", "error"); }
-    finally { setPincodeLoading(false); }
+        success = true;
+      }
+    } catch (e) {
+      console.log("Primary pincode API failed, trying fallback...");
+    }
+
+    if (!success) {
+      try {
+        const fallbackRes = await fetch(`https://api.zippopotam.us/IN/${pin}`);
+        if (fallbackRes.ok) {
+          const fallbackJson = await fallbackRes.json();
+          if (fallbackJson && fallbackJson.places && fallbackJson.places.length > 0) {
+            const firstPlace = fallbackJson.places[0];
+            const uniq = (arr) => [...new Set(arr.filter(Boolean))].map((v) => ({ value: v, label: v }));
+            const placeNames = fallbackJson.places.map(p => p["place name"]);
+            
+            setForm((p) => ({
+              ...p,
+              state: firstPlace.state || "",
+              city: firstPlace["place name"] || "",
+              district: firstPlace["place name"] || "",
+            }));
+            
+            setPincodeOptions({
+              talukas: [],
+              villages: uniq(placeNames),
+              localities: uniq(placeNames),
+              streets: uniq(placeNames),
+            });
+            showToast(`${firstPlace["place name"]}, ${firstPlace.state}`);
+            success = true;
+          }
+        }
+      } catch (fallbackError) {
+        console.log("Fallback pincode API failed.", fallbackError);
+      }
+    }
+
+    if (!success) {
+      showToast("Invalid pincode or no data found.", "error");
+      setPincodeOptions(null);
+    }
+    
+    setPincodeLoading(false);
   }, [showToast]);
 
   // ── DERIVED ────────────────────────────────────────────────────────────────
