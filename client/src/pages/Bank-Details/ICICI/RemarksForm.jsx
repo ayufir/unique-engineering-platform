@@ -298,22 +298,52 @@ const RemarksForm = ({
     if (onFinalSubmit) onFinalSubmit(buildPayload());
   };
 
-  const handleDownloadJson = () => {
+  const handleDownloadJson = async () => {
+    toast.loading("Preparing JSON with images...", { id: "json-download" });
     const fullState = { ...data, ...buildPayload() };
-    // Remove any File objects or functions if they exist (though sanitizeForSave does this normally, simple stringify is fine for backup)
-    const cleanState = JSON.parse(JSON.stringify(fullState, (key, value) => {
-        if (value instanceof File) return undefined;
-        return value;
-    }));
     
-    const blob = new Blob([JSON.stringify(cleanState, null, 2)], { type: "application/json" });
+    const fileToBase64 = (file) => new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(file);
+    });
+
+    const cleanState = { ...fullState };
+    
+    if (cleanState.sitePhotographs && Array.isArray(cleanState.sitePhotographs)) {
+      const photosWithBase64 = [];
+      for (const photo of cleanState.sitePhotographs) {
+        if (typeof File !== "undefined" && photo instanceof File) {
+          const base64 = await fileToBase64(photo);
+          photosWithBase64.push({ name: photo.name, type: photo.type, size: photo.size, base64 });
+        } else {
+           photosWithBase64.push(photo);
+        }
+      }
+      cleanState.sitePhotographs = photosWithBase64;
+    }
+
+    const fileFields = ['doorPhotoFile', 'societyRegisteredFile'];
+    for (const field of fileFields) {
+      if (typeof File !== "undefined" && cleanState[field] instanceof File) {
+         const base64 = await fileToBase64(cleanState[field]);
+         cleanState[field] = { name: cleanState[field].name, type: cleanState[field].type, size: cleanState[field].size, base64 };
+      }
+    }
+
+    const finalStr = JSON.stringify(cleanState, (key, value) => {
+      if (typeof File !== "undefined" && value instanceof File) return undefined;
+      return value;
+    }, 2);
+    
+    const blob = new Blob([finalStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = `icici-form-${editData?._id || "draft"}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("JSON Downloaded!");
+    toast.success("JSON Downloaded!", { id: "json-download" });
   };
 
   const handlePreview = () => {
