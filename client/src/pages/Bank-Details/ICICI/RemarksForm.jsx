@@ -637,22 +637,24 @@ const RemarksForm = ({
           </Button>
         )}
         
-        <Button
-          onClick={handleDownloadJson}
-          style={{
-            borderColor: "#003b70",
-            color: "#003b70",
-            height: "38px",
-            paddingLeft: "24px",
-            paddingRight: "24px",
-            fontSize: "14px",
-            fontWeight: "500",
-            borderRadius: "4px",
-          }}
-          className="h-[38px] px-6 text-sm font-medium rounded-[4px] hover:bg-gray-50"
-        >
-          ⬇️ Download JSON
-        </Button>
+        {(data?.isReportSubmitted || editData?.isReportSubmitted || data?.status === "FinalSubmitted" || editData?.status === "FinalSubmitted") && (
+          <Button
+            onClick={handleDownloadJson}
+            style={{
+              borderColor: "#003b70",
+              color: "#003b70",
+              height: "38px",
+              paddingLeft: "24px",
+              paddingRight: "24px",
+              fontSize: "14px",
+              fontWeight: "500",
+              borderRadius: "4px",
+            }}
+            className="h-[38px] px-6 text-sm font-medium rounded-[4px] hover:bg-gray-50"
+          >
+            ⬇️ Download JSON
+          </Button>
+        )}
       </div>
     </div>
   );
