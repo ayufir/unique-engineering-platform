@@ -313,9 +313,14 @@ const RemarksForm = ({
     if (cleanState.sitePhotographs && Array.isArray(cleanState.sitePhotographs)) {
       const photosWithBase64 = [];
       for (const photo of cleanState.sitePhotographs) {
-        if (typeof File !== "undefined" && photo instanceof File) {
-          const base64 = await fileToBase64(photo);
-          photosWithBase64.push({ name: photo.name, type: photo.type, size: photo.size, base64 });
+        let actualFile = photo;
+        if (photo && photo.originFileObj instanceof File) {
+          actualFile = photo.originFileObj;
+        }
+
+        if (typeof File !== "undefined" && actualFile instanceof File) {
+          const base64 = await fileToBase64(actualFile);
+          photosWithBase64.push({ name: actualFile.name, type: actualFile.type, size: actualFile.size, base64 });
         } else {
            photosWithBase64.push(photo);
         }
@@ -325,9 +330,13 @@ const RemarksForm = ({
 
     const fileFields = ['doorPhotoFile', 'societyRegisteredFile'];
     for (const field of fileFields) {
-      if (typeof File !== "undefined" && cleanState[field] instanceof File) {
-         const base64 = await fileToBase64(cleanState[field]);
-         cleanState[field] = { name: cleanState[field].name, type: cleanState[field].type, size: cleanState[field].size, base64 };
+      let actualFile = cleanState[field];
+      if (actualFile && actualFile.originFileObj instanceof File) {
+        actualFile = actualFile.originFileObj;
+      }
+      if (typeof File !== "undefined" && actualFile instanceof File) {
+         const base64 = await fileToBase64(actualFile);
+         cleanState[field] = { name: actualFile.name, type: actualFile.type, size: actualFile.size, base64 };
       }
     }
 

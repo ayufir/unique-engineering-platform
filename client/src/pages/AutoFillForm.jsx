@@ -901,7 +901,14 @@ const AutoFillForm = ({ setFormData }) => {
                             let n = bstr.length;
                             const u8arr = new Uint8Array(n);
                             while(n--){ u8arr[n] = bstr.charCodeAt(n); }
-                            return new File([u8arr], obj.name, {type: obj.type});
+                            const file = new File([u8arr], obj.name, {type: obj.type});
+                            return {
+                                uid: `rc-upload-${Date.now()}-${Math.random()}`,
+                                name: file.name,
+                                status: 'done',
+                                originFileObj: file,
+                                url: URL.createObjectURL(file)
+                            };
                         } catch(e) { return obj; }
                     };
 
@@ -925,7 +932,14 @@ const AutoFillForm = ({ setFormData }) => {
                         while(n--){
                             u8arr[n] = bstr.charCodeAt(n);
                         }
-                        return new File([u8arr], photo.name, {type: photo.type});
+                        const file = new File([u8arr], photo.name, {type: photo.type});
+                        return {
+                            uid: `rc-upload-${Date.now()}-${Math.random()}`,
+                            name: file.name,
+                            status: 'done',
+                            originFileObj: file,
+                            url: URL.createObjectURL(file)
+                        };
                     });
                     
                     mapped.sitePhotographs = parsedPhotos;
