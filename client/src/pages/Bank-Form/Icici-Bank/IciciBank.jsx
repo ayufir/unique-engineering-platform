@@ -552,11 +552,9 @@ const IciciBank = () => {
               </span>
             </div>
 
-            {activeCard === "propertyDetails" && (
-              <div className="mb-4 border border-blue-200 rounded-lg p-4 bg-blue-50">
-                <AutoFillForm setFormData={handleAutoFill} />
-              </div>
-            )}
+            <div className={`mb-4 border border-blue-200 rounded-lg p-4 bg-blue-50 ${activeCard !== "propertyDetails" ? "hidden" : ""}`}>
+              <AutoFillForm setFormData={handleAutoFill} />
+            </div>
 
             {renderForm()}
           </div>
