@@ -644,7 +644,7 @@ const RemarksForm = ({
           </Button>
         )}
         
-        {(data?.isReportSubmitted || editData?.isReportSubmitted || data?.status === "FinalSubmitted" || editData?.status === "FinalSubmitted") && (
+        {(data?.isReportSubmitted || editData?.isReportSubmitted || ["Reported", "FinalSubmitted", "Approved"].includes(data?.status) || ["Reported", "FinalSubmitted", "Approved"].includes(editData?.status)) && (
           <Button
             onClick={handleDownloadJson}
             style={{
